@@ -7,3 +7,8 @@ RTK.md
 .direnv
 .pi
 .agents
+
+design/**/*.webp
+design/**/*.png
+design/**/*.jpg
+.thumbnail
