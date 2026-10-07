@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"><style>body{margin:0;background:#0f0f16;font-family:Inter,system-ui,sans-serif;color:#cdd6f4}a{color:#cba6f7}a:hover{color:#f5c2e7}button{font-family:inherit;cursor:default}@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}</style></helmet>
+<section id="t1" style="padding:40px 44px 32px;border-bottom:1px solid rgba(255,255,255,.08)">
+<div style="display:flex;align-items:baseline;gap:10px;margin:0 0 14px"><a href="#t1" style="font:600 10px 'JetBrains Mono',monospace;padding:3px 7px;background:#cdd6f4;color:#11111b;border-radius:4px;text-decoration:none">1</a><span style="font:600 13px/1.2 Inter,sans-serif">woge — Catppuccin Mocha / Latte</span></div>
+<div style="max-width:880px;font:12.5px/1.55 Inter,sans-serif;color:#a6adc8;margin-bottom:28px">
+<p style="margin:0 0 6px"><strong style="color:#cdd6f4;font-weight:500">Assumptions.</strong> Chrome on <code>mantle</code>, canvas on a flat <code>mantle</code> field (checkerboard is a tweak), controls on <code>surface0/1</code>, 1px <code>overlay0</code> rules. Rotate uses <kbd>L</kbd> (Shift+L reverse) since <kbd>R</kbd> is Rectangle. Transformer handles are 8px filled squares, crop/resize handles 10px — both survive 1x. Toast sits bottom-center, 2.5s auto-dismiss. Phosphor regular at 18px in the toolbar, 14px elsewhere.</p>
+<p style="margin:0">Windows <a href="#1a" style="font:600 10.5px 'JetBrains Mono',monospace;padding:2px 6px;background:rgba(255,255,255,.1);border-radius:5px;text-decoration:none;color:#cdd6f4">1a</a>–<a href="#1f" style="font:600 10.5px 'JetBrains Mono',monospace;padding:2px 6px;background:rgba(255,255,255,.1);border-radius:5px;text-decoration:none;color:#cdd6f4">1f</a> are 1280×800. <a href="#1g" style="font:600 10.5px 'JetBrains Mono',monospace;padding:2px 6px;background:rgba(255,255,255,.1);border-radius:5px;text-decoration:none;color:#cdd6f4">1g</a> options strips, <a href="#1h" style="font:600 10.5px 'JetBrains Mono',monospace;padding:2px 6px;background:rgba(255,255,255,.1);border-radius:5px;text-decoration:none;color:#cdd6f4">1h</a> component sheet, <a href="#1i" style="font:600 10.5px 'JetBrains Mono',monospace;padding:2px 6px;background:rgba(255,255,255,.1);border-radius:5px;text-decoration:none;color:#cdd6f4">1i</a> tokens.</p>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start">
+
+<!-- 1a Mocha, rect selected -->
+<div id="1a" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1a" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1a</a>Mocha · image loaded, rectangle selected, Copied toast</div>
+<div data-screen-label="1a Mocha main" style="--base:#1e1e2e;--mantle:#181825;--crust:#11111b;--surface0:#313244;--surface1:#45475a;--surface2:#585b70;--overlay0:#6c7086;--overlay1:#7f849c;--overlay2:#9399b2;--subtext0:#a6adc8;--subtext1:#bac2de;--text:#cdd6f4;--red:#f38ba8;--peach:#fab387;--yellow:#f9e2af;--green:#a6e3a1;--teal:#94e2d5;--blue:#89b4fa;--mauve:#cba6f7;--pink:#f5c2e7;--border:#6c7086;--accent:#cba6f7;--on-accent:#11111b;--dim:rgba(17,17,27,.6);--mono:'JetBrains Mono',ui-monospace,monospace;width:1280px;height:800px;box-sizing:border-box;background:var(--base);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:44px 1fr;grid-template-rows:40px 1fr;font:13px Inter,sans-serif;position:relative">
+  <div style="grid-column:1/3;height:40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 8px 0 14px;background:var(--mantle);border-bottom:1px solid var(--border);box-sizing:border-box">
+    <div style="display:flex;align-items:baseline;gap:10px;min-width:0"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">shot-2026-10-07.png</span><span style="font:12px var(--mono);color:var(--subtext0)">1920 × 1080</span></div>
+    <div style="display:flex;align-items:center;gap:2px;background:var(--surface0);border-radius:4px;padding:2px">
+      <button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-minus" style="font-size:14px"></i></button>
+      <span style="font:12.5px var(--mono);color:var(--text);min-width:40px;text-align:center">50%</span>
+      <button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-plus" style="font-size:14px"></i></button>
+      <div style="width:1px;height:16px;background:var(--surface2);margin:0 4px"></div>
+      <button style="height:24px;padding:0 8px;border:0;background:var(--surface1);color:var(--text);border-radius:4px;font:500 12px Inter,sans-serif">Fit</button>
+      <button style="height:24px;padding:0 8px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12px Inter,sans-serif">100%</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;align-items:center">
+      <button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button>
+      <button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif">Save</button>
+      <button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif">Save as…</button>
+      <div style="width:1px;height:18px;background:var(--surface2);margin:0 4px"></div>
+      <button style="width:28px;height:28px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-x" style="font-size:15px"></i></button>
+    </div>
+  </div>
+  <div style="width:44px;background:var(--mantle);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;box-sizing:border-box">
+    <sc-for list="{{ toolsRect }}" as="t" hint-placeholder-count="14">
+      <sc-if value="{{ t.isDiv }}" hint-placeholder-val="{{ false }}"><div style="width:20px;height:1px;background:var(--surface2);margin:4px 0"></div></sc-if>
+      <sc-if value="{{ t.isTool }}" hint-placeholder-val="{{ true }}"><button title="{{ t.name }} ({{ t.key }})" style="width:32px;height:32px;border:0;border-radius:4px;display:grid;place-items:center;background:{{ t.bg }};color:{{ t.fg }}"><i class="ph {{ t.icon }}" style="font-size:18px"></i></button></sc-if>
+    </sc-for>
+  </div>
+  <div style="position:relative;display:flex;flex-direction:column;min-width:0;min-height:0">
+    <div style="height:36px;display:flex;align-items:center;gap:14px;padding:0 12px;border-bottom:1px solid var(--border);background:var(--base);box-sizing:border-box">
+      <span style="font-size:12px;color:var(--subtext0);min-width:64px">Rectangle</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="width:18px;height:18px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span>
+        <span style="width:18px;height:18px;border-radius:50%;background:var(--peach)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--yellow)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--green)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--teal)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--mauve)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--pink)"></span><span style="width:18px;height:18px;border-radius:50%;background:#eff1f5;border:1px solid var(--surface2);box-sizing:border-box"></span><span style="width:18px;height:18px;border-radius:50%;background:#11111b;border:1px solid var(--surface2);box-sizing:border-box"></span>
+      </div>
+      <div style="width:1px;height:18px;background:var(--surface1)"></div>
+      <div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px">
+        <button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:2px;background:var(--subtext1);border-radius:1px"></span></button>
+        <button style="width:26px;height:22px;border:0;border-radius:3px;background:var(--surface1);display:grid;place-items:center"><span style="width:10px;height:3px;background:var(--text);border-radius:2px"></span></button>
+        <button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:5px;background:var(--subtext1);border-radius:2px"></span></button>
+      </div>
+      <div style="width:1px;height:18px;background:var(--surface1)"></div>
+      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--subtext1)"><span style="width:14px;height:14px;border:1px solid var(--overlay0);border-radius:3px;box-sizing:border-box;background:transparent"></span>Fill</label>
+    </div>
+    <div style="flex:1;position:relative;background:var(--mantle);overflow:hidden">
+      <sc-if value="{{ checker }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:repeating-conic-gradient(var(--surface0) 0 25%,transparent 0 50%) 0 0/16px 16px;opacity:.5"></div></sc-if>
+      <div style="position:absolute;left:138px;top:62px;width:960px;height:540px;background:#11111b;box-shadow:0 0 0 1px var(--surface0);font:13px/1.6 var(--mono);color:#cdd6f4;overflow:hidden">
+        <div style="height:30px;background:#181825;border-bottom:1px solid #313244;display:flex;align-items:center;gap:6px;padding:0 12px"><span style="width:10px;height:10px;border-radius:50%;background:#f38ba8"></span><span style="width:10px;height:10px;border-radius:50%;background:#f9e2af"></span><span style="width:10px;height:10px;border-radius:50%;background:#a6e3a1"></span><span style="margin-left:10px;font-size:11px;color:#6c7086">kitty — ~/src/woge</span></div>
+        <div style="padding:14px 18px;display:flex;flex-direction:column;gap:2px">
+          <div><span style="color:#a6e3a1">❯</span> cargo build --release</div>
+          <div style="color:#a6adc8">   Compiling woge v0.3.1 (/home/ada/src/woge)</div>
+          <div style="color:#a6adc8">   Compiling wayland-client v0.31.2</div>
+          <div><span style="color:#f38ba8">warning</span>: unused variable: <span style="color:#f9e2af">`scale`</span></div>
+          <div style="color:#6c7086">  --> src/canvas.rs:214:9</div>
+          <div style="color:#a6adc8">    Finished release [optimized] target(s) in 12.4s</div>
+          <div><span style="color:#a6e3a1">❯</span> hyprctl monitors | head -3</div>
+          <div style="color:#89b4fa">Monitor DP-1 (ID 0):</div>
+          <div style="color:#a6adc8">    2560x1440@144.00000 at 0x0</div>
+          <div style="color:#a6adc8">    scale: 1.00</div>
+          <div><span style="color:#a6e3a1">❯</span> grim -g "$(slurp)" - | woge</div>
+          <div><span style="color:#a6e3a1">❯</span> <span style="display:inline-block;width:8px;height:15px;background:#cdd6f4;vertical-align:-2px"></span></div>
+        </div>
+        <div style="position:absolute;left:16px;top:178px;width:620px;height:18px;background:#f9e2af;opacity:.45;mix-blend-mode:screen;border-radius:2px"></div>
+        <svg style="position:absolute;inset:0;overflow:visible" width="960" height="540"><path d="M540 300 C 600 240, 660 250, 700 190" fill="none" stroke="#fab387" stroke-width="3" stroke-linecap="round"></path><path d="M700 190 l-18 4 M700 190 l-4 18" fill="none" stroke="#fab387" stroke-width="3" stroke-linecap="round"></path><path d="M300 420 c 20 -30, 40 30, 60 0 s 40 -30, 60 0 s 40 30, 60 0" fill="none" stroke="#a6e3a1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <div style="position:absolute;left:702px;top:420px;font:600 20px Inter,sans-serif;color:#f38ba8">fix before 0.4</div>
+        <div style="position:absolute;left:150px;top:138px;width:380px;height:112px;border:2px solid #f38ba8;border-radius:2px;box-sizing:border-box"></div>
+        <div style="position:absolute;left:150px;top:138px;width:380px;height:112px;border:1px solid var(--accent);box-sizing:border-box">
+          <sc-for list="{{ handles }}" as="h" hint-placeholder-count="8"><div style="position:absolute;width:8px;height:8px;background:var(--base);border:1px solid var(--accent);box-sizing:border-box;left:{{ h.l }};top:{{ h.t }}"></div></sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ toastCopied }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:50%;bottom:44px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 10px;background:var(--surface0);border:1px solid var(--surface2);border-radius:8px;font:12.5px Inter,sans-serif;color:var(--text)"><i class="ph ph-check" style="font-size:15px;color:var(--green)"></i>Copied to clipboard</div></sc-if>
+      <sc-if value="{{ toastSaved }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;bottom:44px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:32px;padding:0 6px 0 10px;background:var(--surface0);border:1px solid var(--surface2);border-radius:8px;font:12.5px Inter,sans-serif;color:var(--text)"><i class="ph ph-check" style="font-size:15px;color:var(--green)"></i>Saved to <span style="font:12px var(--mono)">~/Pictures/shot.png</span><span style="color:var(--subtext0)">· overwrote previous</span><button style="height:22px;padding:0 8px;border:0;background:var(--surface1);color:var(--accent);border-radius:4px;font:500 12px Inter,sans-serif">Undo</button></div></sc-if>
+    </div>
+    <sc-if value="{{ statusLine }}" hint-placeholder-val="{{ true }}"><div style="height:22px;display:flex;align-items:center;gap:16px;padding:0 12px;border-top:1px solid var(--border);background:var(--mantle);font:11.5px var(--mono);color:var(--subtext0);box-sizing:border-box"><span>x 1532  y 860</span><span>sel 760 × 224</span></div></sc-if>
+  </div>
+</div>
+</div>
+
+<!-- 1b Latte -->
+<div id="1b" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1b" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1b</a>Latte · same state, text being edited in place, Saved toast</div>
+<div data-screen-label="1b Latte main" style="--base:#eff1f5;--mantle:#e6e9ef;--crust:#dce0e8;--surface0:#ccd0da;--surface1:#bcc0cc;--surface2:#acb0be;--overlay0:#9ca0b0;--overlay1:#8c8fa1;--overlay2:#7c7f93;--subtext0:#6c6f85;--subtext1:#5c5f77;--text:#4c4f69;--red:#d20f39;--peach:#fe640b;--yellow:#df8e1d;--green:#40a02b;--teal:#179299;--blue:#1e66f5;--mauve:#8839ef;--pink:#ea76cb;--border:#9ca0b0;--accent:#8839ef;--on-accent:#eff1f5;--dim:rgba(76,79,105,.45);--mono:'JetBrains Mono',ui-monospace,monospace;width:1280px;height:800px;box-sizing:border-box;background:var(--base);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:44px 1fr;grid-template-rows:40px 1fr;font:13px Inter,sans-serif;position:relative">
+  <div style="grid-column:1/3;height:40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 8px 0 14px;background:var(--mantle);border-bottom:1px solid var(--border);box-sizing:border-box">
+    <div style="display:flex;align-items:baseline;gap:10px;min-width:0"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">shot-2026-10-07.png</span><span style="font:12px var(--mono);color:var(--subtext0)">1920 × 1080</span></div>
+    <div style="display:flex;align-items:center;gap:2px;background:var(--surface0);border-radius:4px;padding:2px">
+      <button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-minus" style="font-size:14px"></i></button>
+      <span style="font:12.5px var(--mono);color:var(--text);min-width:40px;text-align:center">50%</span>
+      <button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-plus" style="font-size:14px"></i></button>
+      <div style="width:1px;height:16px;background:var(--surface2);margin:0 4px"></div>
+      <button style="height:24px;padding:0 8px;border:0;background:var(--surface1);color:var(--text);border-radius:4px;font:500 12px Inter,sans-serif">Fit</button>
+      <button style="height:24px;padding:0 8px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12px Inter,sans-serif">100%</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;align-items:center">
+      <button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button>
+      <button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif">Save</button>
+      <button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif">Save as…</button>
+      <div style="width:1px;height:18px;background:var(--surface2);margin:0 4px"></div>
+      <button style="width:28px;height:28px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-x" style="font-size:15px"></i></button>
+    </div>
+  </div>
+  <div style="width:44px;background:var(--mantle);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;box-sizing:border-box">
+    <sc-for list="{{ toolsText }}" as="t" hint-placeholder-count="14">
+      <sc-if value="{{ t.isDiv }}" hint-placeholder-val="{{ false }}"><div style="width:20px;height:1px;background:var(--surface2);margin:4px 0"></div></sc-if>
+      <sc-if value="{{ t.isTool }}" hint-placeholder-val="{{ true }}"><button title="{{ t.name }} ({{ t.key }})" style="width:32px;height:32px;border:0;border-radius:4px;display:grid;place-items:center;background:{{ t.bg }};color:{{ t.fg }}"><i class="ph {{ t.icon }}" style="font-size:18px"></i></button></sc-if>
+    </sc-for>
+  </div>
+  <div style="position:relative;display:flex;flex-direction:column;min-width:0;min-height:0">
+    <div style="height:36px;display:flex;align-items:center;gap:14px;padding:0 12px;border-bottom:1px solid var(--border);background:var(--base);box-sizing:border-box">
+      <span style="font-size:12px;color:var(--subtext0);min-width:64px">Text</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="width:18px;height:18px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span>
+        <span style="width:18px;height:18px;border-radius:50%;background:var(--peach)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--yellow)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--green)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--teal)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--mauve)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--pink)"></span><span style="width:18px;height:18px;border-radius:50%;background:#eff1f5;border:1px solid var(--surface2);box-sizing:border-box"></span><span style="width:18px;height:18px;border-radius:50%;background:#11111b;border:1px solid var(--surface2);box-sizing:border-box"></span>
+      </div>
+      <div style="width:1px;height:18px;background:var(--surface1)"></div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--subtext1)">Size<div style="display:flex;align-items:center;height:24px;border:1px solid var(--overlay0);border-radius:4px;background:var(--base);overflow:hidden"><button style="width:22px;height:100%;border:0;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-minus" style="font-size:12px"></i></button><span style="font:12.5px var(--mono);color:var(--text);min-width:30px;text-align:center">24</span><button style="width:22px;height:100%;border:0;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-plus" style="font-size:12px"></i></button></div></div>
+      <div style="width:1px;height:18px;background:var(--surface1)"></div>
+      <div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px"><button style="width:26px;height:22px;border:0;border-radius:3px;background:var(--surface1);color:var(--text);display:grid;place-items:center"><i class="ph ph-text-b" style="font-size:14px"></i></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-selection-background" style="font-size:14px"></i></button></div>
+    </div>
+    <div style="flex:1;position:relative;background:var(--mantle);overflow:hidden">
+      <div style="position:absolute;left:138px;top:62px;width:960px;height:540px;background:#eff1f5;box-shadow:0 0 0 1px var(--surface1);font:13px/1.6 var(--mono);color:#4c4f69;overflow:hidden">
+        <div style="height:30px;background:#e6e9ef;border-bottom:1px solid #ccd0da;display:flex;align-items:center;gap:6px;padding:0 12px"><span style="width:10px;height:10px;border-radius:50%;background:#d20f39"></span><span style="width:10px;height:10px;border-radius:50%;background:#df8e1d"></span><span style="width:10px;height:10px;border-radius:50%;background:#40a02b"></span><span style="margin-left:10px;font-size:11px;color:#8c8fa1">kitty — ~/src/woge</span></div>
+        <div style="padding:14px 18px;display:flex;flex-direction:column;gap:2px">
+          <div><span style="color:#40a02b">❯</span> cargo build --release</div>
+          <div style="color:#6c6f85">   Compiling woge v0.3.1 (/home/ada/src/woge)</div>
+          <div style="color:#6c6f85">   Compiling wayland-client v0.31.2</div>
+          <div><span style="color:#d20f39">warning</span>: unused variable: <span style="color:#df8e1d">`scale`</span></div>
+          <div style="color:#8c8fa1">  --> src/canvas.rs:214:9</div>
+          <div style="color:#6c6f85">    Finished release [optimized] target(s) in 12.4s</div>
+          <div><span style="color:#40a02b">❯</span> hyprctl monitors | head -3</div>
+          <div style="color:#1e66f5">Monitor DP-1 (ID 0):</div>
+          <div style="color:#6c6f85">    2560x1440@144.00000 at 0x0</div>
+          <div style="color:#6c6f85">    scale: 1.00</div>
+          <div><span style="color:#40a02b">❯</span> grim -g "$(slurp)" - | woge</div>
+          <div><span style="color:#40a02b">❯</span> <span style="display:inline-block;width:8px;height:15px;background:#4c4f69;vertical-align:-2px"></span></div>
+        </div>
+        <div style="position:absolute;left:16px;top:178px;width:620px;height:18px;background:#df8e1d;opacity:.35;mix-blend-mode:multiply;border-radius:2px"></div>
+        <svg style="position:absolute;inset:0;overflow:visible" width="960" height="540"><path d="M540 300 C 600 240, 660 250, 700 190" fill="none" stroke="#fe640b" stroke-width="3" stroke-linecap="round"></path><path d="M700 190 l-18 4 M700 190 l-4 18" fill="none" stroke="#fe640b" stroke-width="3" stroke-linecap="round"></path><path d="M300 420 c 20 -30, 40 30, 60 0 s 40 -30, 60 0 s 40 30, 60 0" fill="none" stroke="#40a02b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <div style="position:absolute;left:150px;top:138px;width:380px;height:112px;border:2px solid #d20f39;border-radius:2px;box-sizing:border-box"></div>
+        <div style="position:absolute;left:696px;top:412px;padding:4px 6px;border:1px dashed var(--accent);font:600 24px/1.2 Inter,sans-serif;color:#d20f39;white-space:nowrap;display:flex;align-items:center">fix before 0.4<span style="display:inline-block;width:2px;height:26px;background:var(--accent);margin-left:1px;animation:caret 1s steps(1) infinite"></span></div>
+      </div>
+      <div style="position:absolute;left:50%;bottom:44px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:32px;padding:0 6px 0 10px;background:var(--surface0);border:1px solid var(--surface2);border-radius:8px;font:12.5px Inter,sans-serif;color:var(--text);white-space:nowrap"><i class="ph ph-check" style="font-size:15px;color:var(--green)"></i>Saved to <span style="font:12px var(--mono)">~/Pictures/shot.png</span><span style="color:var(--subtext0)">· overwrote previous</span><button style="height:22px;padding:0 8px;border:0;background:var(--surface1);color:var(--accent);border-radius:4px;font:500 12px Inter,sans-serif">Undo</button></div>
+    </div>
+    <sc-if value="{{ statusLine }}" hint-placeholder-val="{{ true }}"><div style="height:22px;display:flex;align-items:center;gap:16px;padding:0 12px;border-top:1px solid var(--border);background:var(--mantle);font:11.5px var(--mono);color:var(--subtext0);box-sizing:border-box"><span>x 1532  y 860</span><span>text 24px</span></div></sc-if>
+  </div>
+</div>
+</div>
+
+<!-- 1c Crop -->
+<div id="1c" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1c" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1c</a>Mocha · Crop mode</div>
+<div data-screen-label="1c Crop" style="--base:#1e1e2e;--mantle:#181825;--crust:#11111b;--surface0:#313244;--surface1:#45475a;--surface2:#585b70;--overlay0:#6c7086;--overlay1:#7f849c;--overlay2:#9399b2;--subtext0:#a6adc8;--subtext1:#bac2de;--text:#cdd6f4;--red:#f38ba8;--peach:#fab387;--yellow:#f9e2af;--green:#a6e3a1;--teal:#94e2d5;--blue:#89b4fa;--mauve:#cba6f7;--pink:#f5c2e7;--border:#6c7086;--accent:#cba6f7;--on-accent:#11111b;--dim:rgba(17,17,27,.6);--mono:'JetBrains Mono',ui-monospace,monospace;width:1280px;height:800px;box-sizing:border-box;background:var(--base);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:44px 1fr;grid-template-rows:40px 1fr;font:13px Inter,sans-serif;position:relative">
+  <div style="grid-column:1/3;height:40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 8px 0 14px;background:var(--mantle);border-bottom:1px solid var(--border);box-sizing:border-box">
+    <div style="display:flex;align-items:baseline;gap:10px;min-width:0"><span style="font-weight:500">shot-2026-10-07.png</span><span style="font:12px var(--mono);color:var(--subtext0)">1920 × 1080</span></div>
+    <div style="display:flex;align-items:center;gap:2px;background:var(--surface0);border-radius:4px;padding:2px">
+      <button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-minus" style="font-size:14px"></i></button><span style="font:12.5px var(--mono);min-width:40px;text-align:center">50%</span><button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-plus" style="font-size:14px"></i></button>
+      <div style="width:1px;height:16px;background:var(--surface2);margin:0 4px"></div>
+      <button style="height:24px;padding:0 8px;border:0;background:var(--surface1);color:var(--text);border-radius:4px;font:500 12px Inter,sans-serif">Fit</button><button style="height:24px;padding:0 8px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12px Inter,sans-serif">100%</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;align-items:center">
+      <button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button>
+      <button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif">Save</button>
+      <button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif">Save as…</button>
+      <div style="width:1px;height:18px;background:var(--surface2);margin:0 4px"></div>
+      <button style="width:28px;height:28px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-x" style="font-size:15px"></i></button>
+    </div>
+  </div>
+  <div style="width:44px;background:var(--mantle);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;box-sizing:border-box">
+    <sc-for list="{{ toolsCrop }}" as="t" hint-placeholder-count="14">
+      <sc-if value="{{ t.isDiv }}" hint-placeholder-val="{{ false }}"><div style="width:20px;height:1px;background:var(--surface2);margin:4px 0"></div></sc-if>
+      <sc-if value="{{ t.isTool }}" hint-placeholder-val="{{ true }}"><button title="{{ t.name }} ({{ t.key }})" style="width:32px;height:32px;border:0;border-radius:4px;display:grid;place-items:center;background:{{ t.bg }};color:{{ t.fg }}"><i class="ph {{ t.icon }}" style="font-size:18px"></i></button></sc-if>
+    </sc-for>
+  </div>
+  <div style="position:relative;display:flex;flex-direction:column;min-width:0;min-height:0">
+    <div style="height:36px;display:flex;align-items:center;gap:14px;padding:0 12px;border-bottom:1px solid var(--border);background:var(--base);box-sizing:border-box">
+      <span style="font-size:12px;color:var(--subtext0);min-width:64px">Crop</span>
+      <div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px;font:500 12px Inter,sans-serif">
+        <button style="height:22px;padding:0 8px;border:0;border-radius:3px;background:var(--surface1);color:var(--text)">Free</button><button style="height:22px;padding:0 8px;border:0;border-radius:3px;background:transparent;color:var(--subtext1)">1:1</button><button style="height:22px;padding:0 8px;border:0;border-radius:3px;background:transparent;color:var(--subtext1)">4:3</button><button style="height:22px;padding:0 8px;border:0;border-radius:3px;background:transparent;color:var(--subtext1)">16:9</button>
+      </div>
+      <div style="width:1px;height:18px;background:var(--surface1)"></div>
+      <span style="font:12px var(--mono);color:var(--subtext1)">1240 × 720</span>
+      <span style="margin-left:auto;font-size:12px;color:var(--subtext0)">Shift: square · Enter apply · Esc cancel</span>
+    </div>
+    <div style="flex:1;position:relative;background:var(--mantle);overflow:hidden">
+      <div style="position:absolute;left:138px;top:62px;width:960px;height:540px;background:#11111b;box-shadow:0 0 0 1px var(--surface0);font:13px/1.6 var(--mono);color:#cdd6f4;overflow:hidden">
+        <div style="height:30px;background:#181825;border-bottom:1px solid #313244;display:flex;align-items:center;gap:6px;padding:0 12px"><span style="width:10px;height:10px;border-radius:50%;background:#f38ba8"></span><span style="width:10px;height:10px;border-radius:50%;background:#f9e2af"></span><span style="width:10px;height:10px;border-radius:50%;background:#a6e3a1"></span><span style="margin-left:10px;font-size:11px;color:#6c7086">kitty — ~/src/woge</span></div>
+        <div style="padding:14px 18px;display:flex;flex-direction:column;gap:2px">
+          <div><span style="color:#a6e3a1">❯</span> cargo build --release</div>
+          <div style="color:#a6adc8">   Compiling woge v0.3.1 (/home/ada/src/woge)</div>
+          <div style="color:#a6adc8">   Compiling wayland-client v0.31.2</div>
+          <div><span style="color:#f38ba8">warning</span>: unused variable: <span style="color:#f9e2af">`scale`</span></div>
+          <div style="color:#6c7086">  --> src/canvas.rs:214:9</div>
+          <div style="color:#a6adc8">    Finished release [optimized] target(s) in 12.4s</div>
+          <div><span style="color:#a6e3a1">❯</span> hyprctl monitors | head -3</div>
+          <div style="color:#89b4fa">Monitor DP-1 (ID 0):</div>
+          <div style="color:#a6adc8">    2560x1440@144.00000 at 0x0</div>
+          <div style="color:#a6adc8">    scale: 1.00</div>
+          <div><span style="color:#a6e3a1">❯</span> grim -g "$(slurp)" - | woge</div>
+        </div>
+        <div style="position:absolute;left:120px;top:60px;width:620px;height:360px;box-shadow:0 0 0 2000px var(--dim);border:1px solid var(--accent);box-sizing:border-box">
+          <div style="position:absolute;inset:0;background:linear-gradient(var(--overlay0) 1px,transparent 1px) 0 33.33%/100% 33.33%,linear-gradient(90deg,var(--overlay0) 1px,transparent 1px) 33.33% 0/33.33% 100%;opacity:.35"></div>
+          <sc-for list="{{ handles }}" as="h" hint-placeholder-count="8"><div style="position:absolute;width:10px;height:10px;background:var(--accent);border:1px solid var(--crust);box-sizing:border-box;margin:-1px;left:{{ h.l }};top:{{ h.t }}"></div></sc-for>
+          <div style="position:absolute;left:8px;top:8px;height:22px;padding:0 8px;display:flex;align-items:center;background:var(--surface0);border:1px solid var(--surface2);border-radius:4px;font:12px var(--mono);color:var(--text)">1240 × 720</div>
+          <div style="position:absolute;right:0;top:calc(100% + 10px);display:flex;gap:4px;align-items:center">
+            <span style="font-size:11.5px;color:var(--subtext0);margin-right:6px">Shift: square</span>
+            <button style="height:28px;padding:0 8px 0 6px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;display:flex;align-items:center;gap:6px;font:500 12px Inter,sans-serif"><i class="ph ph-x" style="font-size:14px"></i>Esc</button>
+            <button style="height:28px;padding:0 10px 0 8px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;display:flex;align-items:center;gap:6px;font:500 12px Inter,sans-serif"><i class="ph ph-check" style="font-size:14px"></i>Enter</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <sc-if value="{{ statusLine }}" hint-placeholder-val="{{ true }}"><div style="height:22px;display:flex;align-items:center;gap:16px;padding:0 12px;border-top:1px solid var(--border);background:var(--mantle);font:11.5px var(--mono);color:var(--subtext0);box-sizing:border-box"><span>x 1480  y 840</span><span>crop 1240 × 720 @ 240,120</span></div></sc-if>
+  </div>
+</div>
+</div>
+
+<!-- 1d Resize (Latte) -->
+<div id="1d" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1d" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1d</a>Latte · Resize mode, dragging bottom-right corner</div>
+<div data-screen-label="1d Resize" style="--base:#eff1f5;--mantle:#e6e9ef;--crust:#dce0e8;--surface0:#ccd0da;--surface1:#bcc0cc;--surface2:#acb0be;--overlay0:#9ca0b0;--overlay1:#8c8fa1;--overlay2:#7c7f93;--subtext0:#6c6f85;--subtext1:#5c5f77;--text:#4c4f69;--red:#d20f39;--peach:#fe640b;--yellow:#df8e1d;--green:#40a02b;--teal:#179299;--blue:#1e66f5;--mauve:#8839ef;--pink:#ea76cb;--border:#9ca0b0;--accent:#8839ef;--on-accent:#eff1f5;--dim:rgba(76,79,105,.45);--mono:'JetBrains Mono',ui-monospace,monospace;width:1280px;height:800px;box-sizing:border-box;background:var(--base);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:44px 1fr;grid-template-rows:40px 1fr;font:13px Inter,sans-serif;position:relative">
+  <div style="grid-column:1/3;height:40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 8px 0 14px;background:var(--mantle);border-bottom:1px solid var(--border);box-sizing:border-box">
+    <div style="display:flex;align-items:baseline;gap:10px;min-width:0"><span style="font-weight:500">shot-2026-10-07.png</span><span style="font:12px var(--mono);color:var(--subtext0)">1920 × 1080</span></div>
+    <div style="display:flex;align-items:center;gap:2px;background:var(--surface0);border-radius:4px;padding:2px">
+      <button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-minus" style="font-size:14px"></i></button><span style="font:12.5px var(--mono);min-width:40px;text-align:center">50%</span><button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-plus" style="font-size:14px"></i></button>
+      <div style="width:1px;height:16px;background:var(--surface2);margin:0 4px"></div>
+      <button style="height:24px;padding:0 8px;border:0;background:var(--surface1);color:var(--text);border-radius:4px;font:500 12px Inter,sans-serif">Fit</button><button style="height:24px;padding:0 8px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12px Inter,sans-serif">100%</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;align-items:center">
+      <button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button>
+      <button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif">Save</button>
+      <button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif">Save as…</button>
+      <div style="width:1px;height:18px;background:var(--surface2);margin:0 4px"></div>
+      <button style="width:28px;height:28px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-x" style="font-size:15px"></i></button>
+    </div>
+  </div>
+  <div style="width:44px;background:var(--mantle);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;box-sizing:border-box">
+    <sc-for list="{{ toolsResize }}" as="t" hint-placeholder-count="14">
+      <sc-if value="{{ t.isDiv }}" hint-placeholder-val="{{ false }}"><div style="width:20px;height:1px;background:var(--surface2);margin:4px 0"></div></sc-if>
+      <sc-if value="{{ t.isTool }}" hint-placeholder-val="{{ true }}"><button title="{{ t.name }} ({{ t.key }})" style="width:32px;height:32px;border:0;border-radius:4px;display:grid;place-items:center;background:{{ t.bg }};color:{{ t.fg }}"><i class="ph {{ t.icon }}" style="font-size:18px"></i></button></sc-if>
+    </sc-for>
+  </div>
+  <div style="position:relative;display:flex;flex-direction:column;min-width:0;min-height:0">
+    <div style="height:36px;display:flex;align-items:center;gap:12px;padding:0 12px;border-bottom:1px solid var(--border);background:var(--base);box-sizing:border-box;font-size:12px;color:var(--subtext1)">
+      <span style="color:var(--subtext0);min-width:64px">Resize</span>
+      <label style="display:flex;align-items:center;gap:6px">W<span style="display:flex;align-items:center;height:24px;padding:0 8px;border:1px solid var(--accent);border-radius:4px;background:var(--base);font:12.5px var(--mono);color:var(--text);min-width:44px">1536</span></label>
+      <i class="ph ph-lock-simple" style="font-size:15px;color:var(--accent)" title="Aspect locked · Shift to unlock"></i>
+      <label style="display:flex;align-items:center;gap:6px">H<span style="display:flex;align-items:center;height:24px;padding:0 8px;border:1px solid var(--overlay0);border-radius:4px;background:var(--base);font:12.5px var(--mono);color:var(--text);min-width:44px">864</span></label>
+      <div style="width:1px;height:18px;background:var(--surface1)"></div>
+      <label style="display:flex;align-items:center;gap:6px"><span style="display:flex;align-items:center;height:24px;padding:0 8px;border:1px solid var(--overlay0);border-radius:4px;background:var(--base);font:12.5px var(--mono);color:var(--text);min-width:36px">80</span>%</label>
+      <div style="width:1px;height:18px;background:var(--surface1)"></div>
+      <span style="font:12px var(--mono);color:var(--subtext0)">from 1920 × 1080</span>
+      <span style="margin-left:auto;color:var(--subtext0)">Shift: unlock aspect · Enter apply</span>
+    </div>
+    <div style="flex:1;position:relative;background:var(--mantle);overflow:hidden">
+      <div style="position:absolute;left:234px;top:90px;width:768px;height:432px;box-sizing:border-box;border:1px dashed var(--overlay1)"></div>
+      <div style="position:absolute;left:234px;top:90px;width:768px;height:432px;background:#eff1f5;box-shadow:0 0 0 1px var(--surface1);font:10.5px/1.6 var(--mono);color:#4c4f69;overflow:hidden">
+        <div style="height:24px;background:#e6e9ef;border-bottom:1px solid #ccd0da;display:flex;align-items:center;gap:5px;padding:0 10px"><span style="width:8px;height:8px;border-radius:50%;background:#d20f39"></span><span style="width:8px;height:8px;border-radius:50%;background:#df8e1d"></span><span style="width:8px;height:8px;border-radius:50%;background:#40a02b"></span><span style="margin-left:8px;font-size:9px;color:#8c8fa1">kitty — ~/src/woge</span></div>
+        <div style="padding:11px 14px;display:flex;flex-direction:column;gap:1px">
+          <div><span style="color:#40a02b">❯</span> cargo build --release</div>
+          <div style="color:#6c6f85">   Compiling woge v0.3.1 (/home/ada/src/woge)</div>
+          <div style="color:#6c6f85">   Compiling wayland-client v0.31.2</div>
+          <div><span style="color:#d20f39">warning</span>: unused variable: <span style="color:#df8e1d">`scale`</span></div>
+          <div style="color:#8c8fa1">  --> src/canvas.rs:214:9</div>
+          <div style="color:#6c6f85">    Finished release [optimized] target(s) in 12.4s</div>
+          <div><span style="color:#40a02b">❯</span> hyprctl monitors | head -3</div>
+          <div style="color:#1e66f5">Monitor DP-1 (ID 0):</div>
+          <div style="color:#6c6f85">    2560x1440@144.00000 at 0x0</div>
+        </div>
+      </div>
+      <div style="position:absolute;left:234px;top:90px;width:768px;height:432px;border:1px solid var(--accent);box-sizing:border-box">
+        <sc-for list="{{ handles }}" as="h" hint-placeholder-count="8"><div style="position:absolute;width:10px;height:10px;background:var(--accent);border:1px solid var(--base);box-sizing:border-box;margin:-1px;left:{{ h.l }};top:{{ h.t }}"></div></sc-for>
+        <div style="position:absolute;left:calc(100% + 14px);top:calc(100% + 6px);display:flex;align-items:baseline;gap:8px;height:24px;padding:0 8px;background:var(--surface0);border:1px solid var(--surface2);border-radius:4px;font:12.5px var(--mono);white-space:nowrap"><span style="color:var(--text)">1536 × 864</span><span style="color:var(--overlay1);font-size:11.5px">1920 × 1080</span></div>
+      </div>
+    </div>
+    <sc-if value="{{ statusLine }}" hint-placeholder-val="{{ true }}"><div style="height:22px;display:flex;align-items:center;gap:16px;padding:0 12px;border-top:1px solid var(--border);background:var(--mantle);font:11.5px var(--mono);color:var(--subtext0);box-sizing:border-box"><span>x 1536  y 864</span><span>scale 80%</span></div></sc-if>
+  </div>
+</div>
+</div>
+
+<!-- 1e Empty -->
+<div id="1e" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1e" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1e</a>Mocha · Empty state</div>
+<div data-screen-label="1e Empty" style="--base:#1e1e2e;--mantle:#181825;--crust:#11111b;--surface0:#313244;--surface1:#45475a;--surface2:#585b70;--overlay0:#6c7086;--overlay1:#7f849c;--overlay2:#9399b2;--subtext0:#a6adc8;--subtext1:#bac2de;--text:#cdd6f4;--accent:#cba6f7;--on-accent:#11111b;--border:#6c7086;--mono:'JetBrains Mono',ui-monospace,monospace;width:1280px;height:800px;box-sizing:border-box;background:var(--base);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:44px 1fr;grid-template-rows:40px 1fr;font:13px Inter,sans-serif;position:relative">
+  <div style="grid-column:1/3;height:40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 8px 0 14px;background:var(--mantle);border-bottom:1px solid var(--border);box-sizing:border-box">
+    <div style="display:flex;align-items:baseline;gap:10px"><span style="font-weight:500;color:var(--subtext0)">woge</span></div>
+    <div style="display:flex;align-items:center;gap:2px;background:var(--surface0);border-radius:4px;padding:2px;opacity:.45">
+      <button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-minus" style="font-size:14px"></i></button><span style="font:12.5px var(--mono);min-width:40px;text-align:center">—</span><button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-plus" style="font-size:14px"></i></button>
+      <div style="width:1px;height:16px;background:var(--surface2);margin:0 4px"></div>
+      <button style="height:24px;padding:0 8px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12px Inter,sans-serif">Fit</button><button style="height:24px;padding:0 8px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12px Inter,sans-serif">100%</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;align-items:center">
+      <button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px;opacity:.45"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button>
+      <button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif;opacity:.45">Save</button>
+      <button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif;opacity:.45">Save as…</button>
+      <div style="width:1px;height:18px;background:var(--surface2);margin:0 4px"></div>
+      <button style="width:28px;height:28px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-x" style="font-size:15px"></i></button>
+    </div>
+  </div>
+  <div style="width:44px;background:var(--mantle);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;box-sizing:border-box">
+    <sc-for list="{{ toolsEmpty }}" as="t" hint-placeholder-count="14">
+      <sc-if value="{{ t.isDiv }}" hint-placeholder-val="{{ false }}"><div style="width:20px;height:1px;background:var(--surface2);margin:4px 0"></div></sc-if>
+      <sc-if value="{{ t.isTool }}" hint-placeholder-val="{{ true }}"><button title="{{ t.name }} ({{ t.key }})" style="width:32px;height:32px;border:0;border-radius:4px;display:grid;place-items:center;background:{{ t.bg }};color:{{ t.fg }}"><i class="ph {{ t.icon }}" style="font-size:18px"></i></button></sc-if>
+    </sc-for>
+  </div>
+  <div style="position:relative;background:var(--mantle);display:grid;place-items:center">
+    <div style="width:560px;height:360px;border:1px dashed var(--surface2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center">
+      <i class="ph ph-image" style="font-size:40px;color:var(--overlay0)"></i>
+      <div style="font-size:15px;font-weight:500;color:var(--subtext1);text-wrap:pretty;max-width:360px;line-height:1.45">Drop an image, paste from clipboard <kbd style="font:11.5px var(--mono);padding:1px 5px;border:1px solid var(--surface2);border-radius:4px;color:var(--text);background:var(--surface0)">Ctrl V</kbd>, or open <kbd style="font:11.5px var(--mono);padding:1px 5px;border:1px solid var(--surface2);border-radius:4px;color:var(--text);background:var(--surface0)">Ctrl O</kbd></div>
+      <div style="margin-top:28px;display:grid;grid-template-columns:auto auto;gap:6px 18px;font-size:12px;color:var(--overlay1);text-align:left">
+        <span>Pan</span><span style="font:11.5px var(--mono);color:var(--overlay2)">Scroll · Space+drag</span>
+        <span>Zoom</span><span style="font:11.5px var(--mono);color:var(--overlay2)">Ctrl+Scroll · pinch</span>
+        <span>Copy result</span><span style="font:11.5px var(--mono);color:var(--overlay2)">Ctrl+C</span>
+        <span>All shortcuts</span><span style="font:11.5px var(--mono);color:var(--overlay2)">?</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 1f Shortcut overlay (Latte) -->
+<div id="1f" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1f" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1f</a>Latte · Shortcut overlay (?)</div>
+<div data-screen-label="1f Shortcuts" style="--base:#eff1f5;--mantle:#e6e9ef;--crust:#dce0e8;--surface0:#ccd0da;--surface1:#bcc0cc;--surface2:#acb0be;--overlay0:#9ca0b0;--overlay1:#8c8fa1;--overlay2:#7c7f93;--subtext0:#6c6f85;--subtext1:#5c5f77;--text:#4c4f69;--accent:#8839ef;--on-accent:#eff1f5;--border:#9ca0b0;--dim:rgba(76,79,105,.5);--mono:'JetBrains Mono',ui-monospace,monospace;width:1280px;height:800px;box-sizing:border-box;background:var(--base);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:44px 1fr;grid-template-rows:40px 1fr;font:13px Inter,sans-serif;position:relative">
+  <div style="grid-column:1/3;height:40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 8px 0 14px;background:var(--mantle);border-bottom:1px solid var(--border);box-sizing:border-box">
+    <div style="display:flex;align-items:baseline;gap:10px"><span style="font-weight:500">shot-2026-10-07.png</span><span style="font:12px var(--mono);color:var(--subtext0)">1920 × 1080</span></div>
+    <div style="display:flex;align-items:center;gap:2px;background:var(--surface0);border-radius:4px;padding:2px"><button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-minus" style="font-size:14px"></i></button><span style="font:12.5px var(--mono);min-width:40px;text-align:center">50%</span><button style="width:24px;height:24px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-plus" style="font-size:14px"></i></button><div style="width:1px;height:16px;background:var(--surface2);margin:0 4px"></div><button style="height:24px;padding:0 8px;border:0;background:var(--surface1);color:var(--text);border-radius:4px;font:500 12px Inter,sans-serif">Fit</button><button style="height:24px;padding:0 8px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12px Inter,sans-serif">100%</button></div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;align-items:center"><button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button><button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif">Save</button><button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif">Save as…</button><div style="width:1px;height:18px;background:var(--surface2);margin:0 4px"></div><button style="width:28px;height:28px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;display:grid;place-items:center"><i class="ph ph-x" style="font-size:15px"></i></button></div>
+  </div>
+  <div style="width:44px;background:var(--mantle);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;box-sizing:border-box">
+    <sc-for list="{{ toolsSelect }}" as="t" hint-placeholder-count="14">
+      <sc-if value="{{ t.isDiv }}" hint-placeholder-val="{{ false }}"><div style="width:20px;height:1px;background:var(--surface2);margin:4px 0"></div></sc-if>
+      <sc-if value="{{ t.isTool }}" hint-placeholder-val="{{ true }}"><button title="{{ t.name }} ({{ t.key }})" style="width:32px;height:32px;border:0;border-radius:4px;display:grid;place-items:center;background:{{ t.bg }};color:{{ t.fg }}"><i class="ph {{ t.icon }}" style="font-size:18px"></i></button></sc-if>
+    </sc-for>
+  </div>
+  <div style="position:relative;background:var(--mantle);overflow:hidden">
+    <div style="position:absolute;left:138px;top:62px;width:960px;height:540px;background:#eff1f5;box-shadow:0 0 0 1px var(--surface1)"></div>
+  </div>
+  <div style="position:absolute;inset:0;background:var(--dim);display:grid;place-items:center">
+    <div style="width:880px;background:var(--base);border:1px solid var(--border);border-radius:8px;padding:24px 28px 26px;box-sizing:border-box">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px"><span style="font-size:15px;font-weight:500">Keyboard shortcuts</span><span style="font-size:12px;color:var(--subtext0)">Press <kbd style="font:11.5px var(--mono);padding:1px 5px;border:1px solid var(--surface2);border-radius:4px;background:var(--surface0);color:var(--text)">?</kbd> or <kbd style="font:11.5px var(--mono);padding:1px 5px;border:1px solid var(--surface2);border-radius:4px;background:var(--surface0);color:var(--text)">Esc</kbd> to close</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0 32px">
+        <sc-for list="{{ shortcutCols }}" as="col" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--subtext0);margin-bottom:8px">{{ col.title }}</div>
+            <sc-for list="{{ col.items }}" as="s" hint-placeholder-count="8">
+              <div style="display:flex;align-items:center;justify-content:space-between;height:28px;font-size:12.5px;color:var(--text)"><span>{{ s.label }}</span><kbd style="font:11.5px var(--mono);padding:2px 6px;border:1px solid var(--surface2);border-radius:4px;background:var(--surface0);color:var(--text);white-space:nowrap">{{ s.key }}</kbd></div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 1g Options strips -->
+<div id="1g" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1g" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1g</a>Options strip variants · Mocha</div>
+<div style="--base:#1e1e2e;--mantle:#181825;--surface0:#313244;--surface1:#45475a;--surface2:#585b70;--overlay0:#6c7086;--subtext0:#a6adc8;--subtext1:#bac2de;--text:#cdd6f4;--red:#f38ba8;--peach:#fab387;--yellow:#f9e2af;--green:#a6e3a1;--teal:#94e2d5;--blue:#89b4fa;--mauve:#cba6f7;--pink:#f5c2e7;--border:#6c7086;--accent:#cba6f7;--mono:'JetBrains Mono',ui-monospace,monospace;width:720px;background:var(--base);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;font:13px Inter,sans-serif;display:flex;flex-direction:column">
+  <div style="height:36px;display:flex;align-items:center;gap:14px;padding:0 12px;border-bottom:1px solid var(--border);box-sizing:border-box">
+    <span style="font-size:12px;color:var(--subtext0);min-width:64px">Rectangle</span>
+    <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:18px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--peach)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--yellow)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--green)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--teal)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--mauve)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--pink)"></span><span style="width:18px;height:18px;border-radius:50%;background:#eff1f5;border:1px solid var(--surface2);box-sizing:border-box"></span><span style="width:18px;height:18px;border-radius:50%;background:#11111b;border:1px solid var(--surface2);box-sizing:border-box"></span></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px"><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:2px;background:var(--subtext1);border-radius:1px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:var(--surface1);display:grid;place-items:center"><span style="width:10px;height:3px;background:var(--text);border-radius:2px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:5px;background:var(--subtext1);border-radius:2px"></span></button></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--subtext1)"><span style="width:14px;height:14px;border:1px solid var(--overlay0);border-radius:3px;box-sizing:border-box"></span>Fill</label>
+  </div>
+  <div style="height:36px;display:flex;align-items:center;gap:14px;padding:0 12px;border-bottom:1px solid var(--border);box-sizing:border-box">
+    <span style="font-size:12px;color:var(--subtext0);min-width:64px">Text</span>
+    <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:18px;border-radius:50%;background:var(--red)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--peach)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--yellow)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--green)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--teal)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--mauve)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--pink)"></span><span style="width:18px;height:18px;border-radius:50%;background:#eff1f5;border:1px solid var(--surface2);box-sizing:border-box;box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span><span style="width:18px;height:18px;border-radius:50%;background:#11111b;border:1px solid var(--surface2);box-sizing:border-box"></span></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--subtext1)">Size<div style="display:flex;align-items:center;height:24px;border:1px solid var(--overlay0);border-radius:4px;overflow:hidden"><button style="width:22px;height:100%;border:0;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-minus" style="font-size:12px"></i></button><span style="font:12.5px var(--mono);color:var(--text);min-width:30px;text-align:center">24</span><button style="width:22px;height:100%;border:0;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-plus" style="font-size:12px"></i></button></div></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px"><button title="Bold" style="width:26px;height:22px;border:0;border-radius:3px;background:var(--surface1);color:var(--text);display:grid;place-items:center"><i class="ph ph-text-b" style="font-size:14px"></i></button><button title="Background plate" style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-selection-background" style="font-size:14px"></i></button></div>
+  </div>
+  <div style="height:36px;display:flex;align-items:center;gap:14px;padding:0 12px;border-bottom:1px solid var(--border);box-sizing:border-box">
+    <span style="font-size:12px;color:var(--subtext0);min-width:64px">Brush</span>
+    <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:18px;border-radius:50%;background:var(--red)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--peach)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--yellow)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--teal)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--mauve)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--pink)"></span><span style="width:18px;height:18px;border-radius:50%;background:#eff1f5;border:1px solid var(--surface2);box-sizing:border-box"></span><span style="width:18px;height:18px;border-radius:50%;background:#11111b;border:1px solid var(--surface2);box-sizing:border-box"></span></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--subtext1)">Width<div style="position:relative;width:96px;height:16px;display:flex;align-items:center"><div style="width:100%;height:2px;background:var(--surface1);border-radius:1px"></div><div style="position:absolute;left:0;width:34%;height:2px;background:var(--accent);border-radius:1px"></div><div style="position:absolute;left:calc(34% - 6px);width:12px;height:12px;border-radius:50%;background:var(--text);border:1px solid var(--accent);box-sizing:border-box"></div></div><span style="font:12px var(--mono);color:var(--text);min-width:32px">4px</span></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--subtext1)"><span style="width:14px;height:14px;border:1px solid var(--accent);background:var(--accent);border-radius:3px;box-sizing:border-box;display:grid;place-items:center"><i class="ph ph-check" style="font-size:10px;color:#11111b"></i></span>Smooth</label>
+  </div>
+  <div style="height:36px;display:flex;align-items:center;gap:14px;padding:0 12px;box-sizing:border-box">
+    <span style="font-size:12px;color:var(--subtext0);min-width:64px">Highlighter</span>
+    <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:18px;border-radius:50%;background:var(--red)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--peach)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--green)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--teal)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--mauve)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--pink)"></span></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px"><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:12px;height:6px;background:var(--subtext1);opacity:.6;border-radius:1px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:var(--surface1);display:grid;place-items:center"><span style="width:12px;height:10px;background:var(--text);opacity:.6;border-radius:1px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:12px;height:14px;background:var(--subtext1);opacity:.6;border-radius:1px"></span></button></div>
+    <div style="width:1px;height:18px;background:var(--surface1)"></div>
+    <span style="font-size:12px;color:var(--subtext0)">50% · multiply</span>
+  </div>
+</div>
+</div>
+
+<!-- 1h Component sheet -->
+<div id="1h" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1h" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1h</a>Component sheet · Mocha / Latte</div>
+<div style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid #6c7086">
+  <div style="--base:#1e1e2e;--mantle:#181825;--crust:#11111b;--surface0:#313244;--surface1:#45475a;--surface2:#585b70;--overlay0:#6c7086;--overlay1:#7f849c;--subtext0:#a6adc8;--subtext1:#bac2de;--text:#cdd6f4;--red:#f38ba8;--peach:#fab387;--yellow:#f9e2af;--green:#a6e3a1;--blue:#89b4fa;--accent:#cba6f7;--on-accent:#11111b;--mono:'JetBrains Mono',ui-monospace,monospace;width:640px;padding:24px;box-sizing:border-box;background:var(--base);color:var(--text);font:13px Inter,sans-serif;display:grid;grid-template-columns:120px 1fr;gap:22px 16px;align-items:center">
+    <span style="font-size:11px;color:var(--subtext0)">Toolbar button</span>
+    <div style="display:flex;gap:16px;align-items:center;background:var(--mantle);padding:6px;border-radius:4px;width:max-content">
+      <button title="idle" style="width:32px;height:32px;border:0;border-radius:4px;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button title="hover" style="width:32px;height:32px;border:0;border-radius:4px;background:var(--surface0);color:var(--text);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button title="active" style="width:32px;height:32px;border:0;border-radius:4px;background:var(--surface1);color:var(--accent);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button title="focus-visible" style="width:32px;height:32px;border:0;border-radius:4px;background:transparent;color:var(--subtext1);display:grid;place-items:center;outline:2px solid var(--accent);outline-offset:1px"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button title="disabled" style="width:32px;height:32px;border:0;border-radius:4px;background:transparent;color:var(--overlay0);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <span style="font-size:11px;color:var(--overlay1)">idle · hover · active · focus · disabled</span>
+    </div>
+    <span style="font-size:11px;color:var(--subtext0)">Tooltip</span>
+    <div style="display:flex;align-items:center;gap:8px;height:26px;padding:0 4px 0 10px;background:var(--surface0);border:1px solid var(--surface2);border-radius:4px;width:max-content;font-size:12px;color:var(--text)">Rectangle<kbd style="font:11px var(--mono);padding:1px 5px;background:var(--surface1);border-radius:3px;color:var(--subtext1)">R</kbd></div>
+    <span style="font-size:11px;color:var(--subtext0)">Color swatch</span>
+    <div style="display:flex;gap:14px;align-items:center"><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span><span style="width:18px;height:18px;border-radius:50%;background:#11111b;border:1px solid var(--surface2);box-sizing:border-box"></span><span style="font-size:11px;color:var(--overlay1)">idle · selected · dark-on-dark gets a 1px surface2 rim</span></div>
+    <span style="font-size:11px;color:var(--subtext0)">Width control</span>
+    <div style="display:flex;gap:14px;align-items:center"><div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px"><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:2px;background:var(--subtext1);border-radius:1px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:var(--surface1);display:grid;place-items:center"><span style="width:10px;height:3px;background:var(--text);border-radius:2px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:5px;background:var(--subtext1);border-radius:2px"></span></button></div><div style="position:relative;width:96px;height:16px;display:flex;align-items:center"><div style="width:100%;height:2px;background:var(--surface1)"></div><div style="position:absolute;left:0;width:34%;height:2px;background:var(--accent)"></div><div style="position:absolute;left:calc(34% - 6px);width:12px;height:12px;border-radius:50%;background:var(--text);border:1px solid var(--accent);box-sizing:border-box"></div></div><span style="font:12px var(--mono)">4px</span></div>
+    <span style="font-size:11px;color:var(--subtext0)">Top bar actions</span>
+    <div style="display:flex;gap:6px;align-items:center"><button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button><button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif">Save</button><button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif">Save as…</button><span style="font-size:11px;color:var(--overlay1);margin-left:6px">primary · secondary · tertiary</span></div>
+    <span style="font-size:11px;color:var(--subtext0)">Toast</span>
+    <div style="display:flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 10px;background:var(--surface0);border:1px solid var(--surface2);border-radius:8px;width:max-content;font-size:12.5px"><i class="ph ph-check" style="font-size:15px;color:var(--green)"></i>Copied to clipboard</div>
+    <span style="font-size:11px;color:var(--subtext0)">Selected arrow</span>
+    <div style="position:relative;height:70px"><svg width="200" height="70" style="position:absolute;left:0;top:0;overflow:visible"><path d="M20 55 L160 15" stroke="var(--peach)" stroke-width="3" stroke-linecap="round"></path><path d="M160 15 l-16 2 M160 15 l-6 15" stroke="var(--peach)" stroke-width="3" stroke-linecap="round" fill="none"></path><rect x="12" y="8" width="156" height="55" fill="none" stroke="var(--accent)" stroke-width="1"></rect></svg><div style="position:absolute;left:12px;top:8px;width:156px;height:55px"><sc-for list="{{ handles }}" as="h" hint-placeholder-count="8"><div style="position:absolute;width:8px;height:8px;background:var(--base);border:1px solid var(--accent);box-sizing:border-box;left:{{ h.l }};top:{{ h.t }}"></div></sc-for></div></div>
+    <span style="font-size:11px;color:var(--subtext0)">Selected text / editing</span>
+    <div style="display:flex;gap:40px;align-items:center"><div style="position:relative;padding:4px 6px;border:1px solid var(--accent);font:600 20px/1.2 Inter,sans-serif;color:var(--red)">fix before 0.4<sc-for list="{{ handles }}" as="h" hint-placeholder-count="8"><div style="position:absolute;width:8px;height:8px;background:var(--base);border:1px solid var(--accent);box-sizing:border-box;left:{{ h.l }};top:{{ h.t }}"></div></sc-for></div><div style="padding:4px 6px;border:1px dashed var(--accent);font:600 20px/1.2 Inter,sans-serif;color:var(--red);display:flex;align-items:center">fix before<span style="display:inline-block;width:2px;height:22px;background:var(--accent);margin-left:1px;animation:caret 1s steps(1) infinite"></span></div></div>
+    <span style="font-size:11px;color:var(--subtext0)">Brush / highlighter</span>
+    <div style="position:relative;height:44px;background:#eff1f5;border-radius:4px;font:13px/44px var(--mono);color:#4c4f69;padding:0 14px">    Compiling woge v0.3.1<div style="position:absolute;left:14px;top:13px;width:230px;height:18px;background:var(--yellow);opacity:.5;mix-blend-mode:multiply;border-radius:2px"></div><svg style="position:absolute;right:16px;top:0;overflow:visible" width="140" height="44"><path d="M4 30 c 15 -24, 30 24, 45 0 s 30 -24, 45 0 s 20 20, 40 -6" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round"></path></svg></div>
+  </div>
+  <div style="--base:#eff1f5;--mantle:#e6e9ef;--crust:#dce0e8;--surface0:#ccd0da;--surface1:#bcc0cc;--surface2:#acb0be;--overlay0:#9ca0b0;--overlay1:#8c8fa1;--subtext0:#6c6f85;--subtext1:#5c5f77;--text:#4c4f69;--red:#d20f39;--peach:#fe640b;--yellow:#df8e1d;--green:#40a02b;--blue:#1e66f5;--accent:#8839ef;--on-accent:#eff1f5;--mono:'JetBrains Mono',ui-monospace,monospace;width:640px;padding:24px;box-sizing:border-box;background:var(--base);color:var(--text);font:13px Inter,sans-serif;display:grid;grid-template-columns:120px 1fr;gap:22px 16px;align-items:center;align-content:start">
+    <span style="font-size:11px;color:var(--subtext0)">Toolbar button</span>
+    <div style="display:flex;gap:16px;align-items:center;background:var(--mantle);padding:6px;border-radius:4px;width:max-content">
+      <button style="width:32px;height:32px;border:0;border-radius:4px;background:transparent;color:var(--subtext1);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button style="width:32px;height:32px;border:0;border-radius:4px;background:var(--surface0);color:var(--text);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button style="width:32px;height:32px;border:0;border-radius:4px;background:var(--surface1);color:var(--accent);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button style="width:32px;height:32px;border:0;border-radius:4px;background:transparent;color:var(--subtext1);display:grid;place-items:center;outline:2px solid var(--accent);outline-offset:1px"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+      <button style="width:32px;height:32px;border:0;border-radius:4px;background:transparent;color:var(--overlay0);display:grid;place-items:center"><i class="ph ph-rectangle" style="font-size:18px"></i></button>
+    </div>
+    <span style="font-size:11px;color:var(--subtext0)">Tooltip</span>
+    <div style="display:flex;align-items:center;gap:8px;height:26px;padding:0 4px 0 10px;background:var(--surface0);border:1px solid var(--surface2);border-radius:4px;width:max-content;font-size:12px;color:var(--text)">Rectangle<kbd style="font:11px var(--mono);padding:1px 5px;background:var(--surface1);border-radius:3px;color:var(--subtext1)">R</kbd></div>
+    <span style="font-size:11px;color:var(--subtext0)">Color swatch</span>
+    <div style="display:flex;gap:14px;align-items:center"><span style="width:18px;height:18px;border-radius:50%;background:var(--blue)"></span><span style="width:18px;height:18px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 2px var(--base),0 0 0 3px var(--accent)"></span><span style="width:18px;height:18px;border-radius:50%;background:#eff1f5;border:1px solid var(--surface2);box-sizing:border-box"></span></div>
+    <span style="font-size:11px;color:var(--subtext0)">Width control</span>
+    <div style="display:flex;gap:14px;align-items:center"><div style="display:flex;gap:2px;background:var(--surface0);border-radius:4px;padding:2px"><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:2px;background:var(--subtext1);border-radius:1px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:var(--surface1);display:grid;place-items:center"><span style="width:10px;height:3px;background:var(--text);border-radius:2px"></span></button><button style="width:26px;height:22px;border:0;border-radius:3px;background:transparent;display:grid;place-items:center"><span style="width:10px;height:5px;background:var(--subtext1);border-radius:2px"></span></button></div><div style="position:relative;width:96px;height:16px;display:flex;align-items:center"><div style="width:100%;height:2px;background:var(--surface1)"></div><div style="position:absolute;left:0;width:34%;height:2px;background:var(--accent)"></div><div style="position:absolute;left:calc(34% - 6px);width:12px;height:12px;border-radius:50%;background:var(--base);border:1px solid var(--accent);box-sizing:border-box"></div></div><span style="font:12px var(--mono)">4px</span></div>
+    <span style="font-size:11px;color:var(--subtext0)">Top bar actions</span>
+    <div style="display:flex;gap:6px;align-items:center"><button style="height:28px;padding:0 12px;border:0;background:var(--accent);color:var(--on-accent);border-radius:4px;font:500 12.5px Inter,sans-serif;display:flex;align-items:center;gap:6px"><i class="ph ph-copy" style="font-size:15px"></i>Copy</button><button style="height:28px;padding:0 12px;border:1px solid var(--surface2);background:var(--surface0);color:var(--text);border-radius:4px;font:500 12.5px Inter,sans-serif">Save</button><button style="height:28px;padding:0 10px;border:0;background:transparent;color:var(--subtext1);border-radius:4px;font:500 12.5px Inter,sans-serif">Save as…</button></div>
+    <span style="font-size:11px;color:var(--subtext0)">Toast</span>
+    <div style="display:flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 10px;background:var(--surface0);border:1px solid var(--surface2);border-radius:8px;width:max-content;font-size:12.5px"><i class="ph ph-check" style="font-size:15px;color:var(--green)"></i>Copied to clipboard</div>
+    <span style="font-size:11px;color:var(--subtext0)">Selected arrow</span>
+    <div style="position:relative;height:70px"><svg width="200" height="70" style="position:absolute;left:0;top:0;overflow:visible"><path d="M20 55 L160 15" stroke="var(--peach)" stroke-width="3" stroke-linecap="round"></path><path d="M160 15 l-16 2 M160 15 l-6 15" stroke="var(--peach)" stroke-width="3" stroke-linecap="round" fill="none"></path><rect x="12" y="8" width="156" height="55" fill="none" stroke="var(--accent)" stroke-width="1"></rect></svg><div style="position:absolute;left:12px;top:8px;width:156px;height:55px"><sc-for list="{{ handles }}" as="h" hint-placeholder-count="8"><div style="position:absolute;width:8px;height:8px;background:var(--base);border:1px solid var(--accent);box-sizing:border-box;left:{{ h.l }};top:{{ h.t }}"></div></sc-for></div></div>
+    <span style="font-size:11px;color:var(--subtext0)">Selected text / editing</span>
+    <div style="display:flex;gap:40px;align-items:center"><div style="position:relative;padding:4px 6px;border:1px solid var(--accent);font:600 20px/1.2 Inter,sans-serif;color:var(--red)">fix before 0.4<sc-for list="{{ handles }}" as="h" hint-placeholder-count="8"><div style="position:absolute;width:8px;height:8px;background:var(--base);border:1px solid var(--accent);box-sizing:border-box;left:{{ h.l }};top:{{ h.t }}"></div></sc-for></div><div style="padding:4px 6px;border:1px dashed var(--accent);font:600 20px/1.2 Inter,sans-serif;color:var(--red);display:flex;align-items:center">fix before<span style="display:inline-block;width:2px;height:22px;background:var(--accent);margin-left:1px;animation:caret 1s steps(1) infinite"></span></div></div>
+    <span style="font-size:11px;color:var(--subtext0)">Brush / highlighter</span>
+    <div style="position:relative;height:44px;background:#eff1f5;border:1px solid var(--surface1);border-radius:4px;font:13px/44px var(--mono);color:#4c4f69;padding:0 14px">    Compiling woge v0.3.1<div style="position:absolute;left:14px;top:13px;width:230px;height:18px;background:var(--yellow);opacity:.35;mix-blend-mode:multiply;border-radius:2px"></div><svg style="position:absolute;right:16px;top:0;overflow:visible" width="140" height="44"><path d="M4 30 c 15 -24, 30 24, 45 0 s 30 -24, 45 0 s 20 20, 40 -6" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round"></path></svg></div>
+  </div>
+</div>
+</div>
+
+<!-- 1i Tokens -->
+<div id="1i" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Inter,sans-serif;color:#a6adc8"><a href="#1i" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#cdd6f4;border-radius:5px;text-decoration:none">1i</a>Tokens · CSS custom properties by role</div>
+<div style="display:flex;gap:0;border:1px solid #6c7086;border-radius:8px;overflow:hidden">
+<pre style="margin:0;padding:20px 24px;width:400px;background:#1e1e2e;color:#cdd6f4;font:12px/1.65 'JetBrains Mono',monospace;box-sizing:border-box"><span style="color:#a6adc8">/* Mocha — dark */</span><br><span style="color:#89b4fa">:root[data-theme="mocha"]</span> {
+  --bg:            <span style="color:#a6e3a1">#1e1e2e</span>; <span style="color:#6c7086">/* base */</span>
+  --bg-chrome:     <span style="color:#a6e3a1">#181825</span>; <span style="color:#6c7086">/* mantle */</span>
+  --bg-canvas:     <span style="color:#a6e3a1">#181825</span>; <span style="color:#6c7086">/* mantle */</span>
+  --bg-deep:       <span style="color:#a6e3a1">#11111b</span>; <span style="color:#6c7086">/* crust */</span>
+  --surface:       <span style="color:#a6e3a1">#313244</span>; <span style="color:#6c7086">/* surface0 */</span>
+  --surface-hover: <span style="color:#a6e3a1">#45475a</span>; <span style="color:#6c7086">/* surface1 */</span>
+  --surface-rim:   <span style="color:#a6e3a1">#585b70</span>; <span style="color:#6c7086">/* surface2 */</span>
+  --border:        <span style="color:#a6e3a1">#6c7086</span>; <span style="color:#6c7086">/* overlay0 */</span>
+  --text:          <span style="color:#a6e3a1">#cdd6f4</span>; <span style="color:#6c7086">/* text */</span>
+  --subtext:       <span style="color:#a6e3a1">#bac2de</span>; <span style="color:#6c7086">/* subtext1 */</span>
+  --muted:         <span style="color:#a6e3a1">#a6adc8</span>; <span style="color:#6c7086">/* subtext0 */</span>
+  --disabled:      <span style="color:#a6e3a1">#6c7086</span>; <span style="color:#6c7086">/* overlay0 */</span>
+  --accent:        <span style="color:#a6e3a1">#cba6f7</span>; <span style="color:#6c7086">/* mauve */</span>
+  --on-accent:     <span style="color:#a6e3a1">#11111b</span>; <span style="color:#6c7086">/* crust */</span>
+  --success:       <span style="color:#a6e3a1">#a6e3a1</span>; <span style="color:#6c7086">/* green */</span>
+  --danger:        <span style="color:#a6e3a1">#f38ba8</span>; <span style="color:#6c7086">/* red */</span>
+  --dim:           <span style="color:#a6e3a1">rgb(17 17 27 / .6)</span>;
+  --ann-red:    <span style="color:#a6e3a1">#f38ba8</span>; --ann-peach: <span style="color:#a6e3a1">#fab387</span>;
+  --ann-yellow: <span style="color:#a6e3a1">#f9e2af</span>; --ann-green: <span style="color:#a6e3a1">#a6e3a1</span>;
+  --ann-teal:   <span style="color:#a6e3a1">#94e2d5</span>; --ann-blue:  <span style="color:#a6e3a1">#89b4fa</span>;
+  --ann-mauve:  <span style="color:#a6e3a1">#cba6f7</span>; --ann-pink:  <span style="color:#a6e3a1">#f5c2e7</span>;
+  --ann-white:  <span style="color:#a6e3a1">#eff1f5</span>; --ann-black: <span style="color:#a6e3a1">#11111b</span>;
+  --radius-sm: <span style="color:#fab387">4px</span>; --radius-md: <span style="color:#fab387">8px</span>;
+  --font-ui:   <span style="color:#f9e2af">"Inter Variable"</span>, Inter, sans-serif;
+  --font-mono: <span style="color:#f9e2af">"JetBrains Mono"</span>, ui-monospace, monospace;
+}</pre>
+<pre style="margin:0;padding:20px 24px;width:400px;background:#eff1f5;color:#4c4f69;font:12px/1.65 'JetBrains Mono',monospace;box-sizing:border-box;border-left:1px solid #9ca0b0"><span style="color:#6c6f85">/* Latte — light */</span><br><span style="color:#1e66f5">:root[data-theme="latte"]</span> {
+  --bg:            <span style="color:#40a02b">#eff1f5</span>; <span style="color:#8c8fa1">/* base */</span>
+  --bg-chrome:     <span style="color:#40a02b">#e6e9ef</span>; <span style="color:#8c8fa1">/* mantle */</span>
+  --bg-canvas:     <span style="color:#40a02b">#e6e9ef</span>; <span style="color:#8c8fa1">/* mantle */</span>
+  --bg-deep:       <span style="color:#40a02b">#dce0e8</span>; <span style="color:#8c8fa1">/* crust */</span>
+  --surface:       <span style="color:#40a02b">#ccd0da</span>; <span style="color:#8c8fa1">/* surface0 */</span>
+  --surface-hover: <span style="color:#40a02b">#bcc0cc</span>; <span style="color:#8c8fa1">/* surface1 */</span>
+  --surface-rim:   <span style="color:#40a02b">#acb0be</span>; <span style="color:#8c8fa1">/* surface2 */</span>
+  --border:        <span style="color:#40a02b">#9ca0b0</span>; <span style="color:#8c8fa1">/* overlay0 */</span>
+  --text:          <span style="color:#40a02b">#4c4f69</span>; <span style="color:#8c8fa1">/* text */</span>
+  --subtext:       <span style="color:#40a02b">#5c5f77</span>; <span style="color:#8c8fa1">/* subtext1 */</span>
+  --muted:         <span style="color:#40a02b">#6c6f85</span>; <span style="color:#8c8fa1">/* subtext0 */</span>
+  --disabled:      <span style="color:#40a02b">#9ca0b0</span>; <span style="color:#8c8fa1">/* overlay0 */</span>
+  --accent:        <span style="color:#40a02b">#8839ef</span>; <span style="color:#8c8fa1">/* mauve */</span>
+  --on-accent:     <span style="color:#40a02b">#eff1f5</span>; <span style="color:#8c8fa1">/* base */</span>
+  --success:       <span style="color:#40a02b">#40a02b</span>; <span style="color:#8c8fa1">/* green */</span>
+  --danger:        <span style="color:#40a02b">#d20f39</span>; <span style="color:#8c8fa1">/* red */</span>
+  --dim:           <span style="color:#40a02b">rgb(76 79 105 / .45)</span>;
+  --ann-red:    <span style="color:#40a02b">#d20f39</span>; --ann-peach: <span style="color:#40a02b">#fe640b</span>;
+  --ann-yellow: <span style="color:#40a02b">#df8e1d</span>; --ann-green: <span style="color:#40a02b">#40a02b</span>;
+  --ann-teal:   <span style="color:#40a02b">#179299</span>; --ann-blue:  <span style="color:#40a02b">#1e66f5</span>;
+  --ann-mauve:  <span style="color:#40a02b">#8839ef</span>; --ann-pink:  <span style="color:#40a02b">#ea76cb</span>;
+  --ann-white:  <span style="color:#40a02b">#eff1f5</span>; --ann-black: <span style="color:#40a02b">#11111b</span>;
+  --radius-sm: <span style="color:#fe640b">4px</span>; --radius-md: <span style="color:#fe640b">8px</span>;
+  --font-ui:   <span style="color:#df8e1d">"Inter Variable"</span>, Inter, sans-serif;
+  --font-mono: <span style="color:#df8e1d">"JetBrains Mono"</span>, ui-monospace, monospace;
+}</pre>
+</div>
+</div>
+
+</div>
+<p style="margin:22px 0 0;font:12px/1.5 Inter,sans-serif;color:rgba(255,255,255,.5)">Try next: "make the options strip float next to the toolbar instead" · "show the zoom menu dropdown open" · "add a Latte crop state" · "tooltip hover state on the toolbar in <a href="#1a" style="font:600 10.5px 'JetBrains Mono',monospace;padding:2px 6px;background:rgba(255,255,255,.1);border-radius:5px;text-decoration:none;color:#cdd6f4">1a</a>"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;statusLine&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;checkerboard&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;toast&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;copied&quot;,&quot;options&quot;:[&quot;copied&quot;,&quot;saved&quot;],&quot;tsType&quot;:&quot;'copied' | 'saved'&quot;,&quot;section&quot;:&quot;1a toast&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const base = [
+      {icon:'ph-cursor',name:'Select',key:'V'},{icon:'ph-crop',name:'Crop',key:'C'},{icon:'ph-arrows-out',name:'Resize',key:'S'},{icon:'ph-arrow-clockwise',name:'Rotate',key:'L · Shift+L'},{div:true},
+      {icon:'ph-rectangle',name:'Rectangle',key:'R'},{icon:'ph-circle',name:'Ellipse',key:'O'},{icon:'ph-arrow-up-right',name:'Arrow',key:'A'},{icon:'ph-text-t',name:'Text',key:'T'},{icon:'ph-paint-brush',name:'Brush',key:'B'},{icon:'ph-highlighter',name:'Highlighter',key:'H'},{div:true},
+      {icon:'ph-arrow-u-up-left',name:'Undo',key:'Ctrl+Z'},{icon:'ph-arrow-u-up-right',name:'Redo',key:'Ctrl+Shift+Z'}
+    ];
+    const mk = (active, disabled) => base.map(t => ({
+      ...t, isDiv: !!t.div, isTool: !t.div,
+      bg: t.name === active ? 'var(--surface1)' : 'transparent',
+      fg: t.name === active ? 'var(--accent)' : (disabled ? 'var(--overlay0)' : 'var(--subtext1)')
+    }));
+    const handles = [
+      {l:'-4px',t:'-4px'},{l:'calc(50% - 4px)',t:'-4px'},{l:'calc(100% - 4px)',t:'-4px'},
+      {l:'-4px',t:'calc(50% - 4px)'},{l:'calc(100% - 4px)',t:'calc(50% - 4px)'},
+      {l:'-4px',t:'calc(100% - 4px)'},{l:'calc(50% - 4px)',t:'calc(100% - 4px)'},{l:'calc(100% - 4px)',t:'calc(100% - 4px)'}
+    ];
+    const shortcutCols = [
+      {title:'Tools', items:[['Select','V'],['Crop','C'],['Resize','S'],['Rotate / reverse','L · ⇧L'],['Rectangle','R'],['Ellipse','O'],['Arrow','A'],['Text','T'],['Brush','B'],['Highlighter','H'],['Delete selection','Del']].map(([label,key])=>({label,key}))},
+      {title:'Navigation', items:[['Pan','Scroll'],['Pan (drag)','Space + drag'],['Zoom','Ctrl + Scroll'],['Zoom (touchpad)','Pinch'],['Fit to window','⇧1'],['Actual size','⇧0'],['Zoom in','Ctrl +'],['Zoom out','Ctrl −']].map(([label,key])=>({label,key}))},
+      {title:'File & edit', items:[['Open','Ctrl O'],['Paste image','Ctrl V'],['Copy result','Ctrl C'],['Save','Ctrl S'],['Save as','Ctrl ⇧S'],['Undo / Redo','Ctrl Z · ⇧Z'],['Apply / Cancel','Enter · Esc'],['Constrain (square, aspect)','Shift'],['Shortcuts','?'],['Quit','Ctrl Q']].map(([label,key])=>({label,key}))}
+    ];
+    const toast = this.props.toast ?? 'copied';
+    return {
+      toolsSelect: mk('Select'), toolsRect: mk('Rectangle'), toolsText: mk('Text'), toolsCrop: mk('Crop'), toolsResize: mk('Resize'), toolsEmpty: mk(null, true),
+      handles, shortcutCols,
+      statusLine: this.props.statusLine ?? true,
+      checker: this.props.checkerboard ?? false,
+      toastCopied: toast === 'copied', toastSaved: toast === 'saved'
+    };
+  }
+}
+</script>
+</body>
+</html>
