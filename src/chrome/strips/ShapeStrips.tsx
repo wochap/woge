@@ -1,4 +1,6 @@
-import type { ColorKey, StrokeWidth } from "../../model/objects";
+import type { ColorKey, ObjectType, StrokeWidth } from "../../model/objects";
+
+const WIDTH_TYPES: ObjectType[] = ["rect", "ellipse", "arrow", "brush", "highlight"];
 import { applyStyle, currentValue, type StripContext } from "./apply";
 import { Swatches } from "./Swatches";
 import { Segmented, Toggle, WidthSegmented } from "./WidthSegmented";
@@ -60,8 +62,8 @@ export function ArrowStrip({ ctx }: { ctx: StripContext }) {
 export function MixedStrip({ ctx }: { ctx: StripContext }) {
   return (
     <>
-      <ColorControl ctx={ctx} />
-      {!ctx.types.includes("text") && <WidthControl ctx={ctx} />}
+      {!ctx.types.includes("redact") && <ColorControl ctx={ctx} />}
+      {ctx.types.every((t) => WIDTH_TYPES.includes(t)) && <WidthControl ctx={ctx} />}
     </>
   );
 }

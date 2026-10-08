@@ -27,6 +27,8 @@ import {
   applyPatch,
   maxZ,
   newId,
+  nextBadgeNumber as maxBadgeNext,
+  renumberBadges,
   reorder as reorderObjects,
   translate,
   type AnnotationObject,
@@ -87,6 +89,14 @@ interface EditorState {
   editingText: string | null;
   /** True while the text being edited was just created (cancel removes it). */
   editingIsNew: boolean;
+  /** Badge open in the inline number editor. */
+  editingBadge: string | null;
+  /** Live size of an in-progress freehand stroke (the stroke itself lives on the ui layer). */
+  liveSize: Dims | null;
+  /** Counter after Reset; null follows `max(n) + 1`. */
+  badgeCounter: number | null;
+  /** Config `badge_renumber`: deleting badges closes gaps. */
+  badgeRenumber: boolean;
 
   loadImage(bitmap: ImageBitmap, source: DocumentSource): void;
   commit(doc: Document): void;
@@ -124,6 +134,14 @@ interface EditorState {
   pasteObjects(): boolean;
   setDrawing(obj: AnnotationObject | null): void;
   setEditingText(id: string | null, isNew?: boolean): void;
+  setEditingBadge(id: string | null): void;
+  /** Number the next badge gets. */
+  nextBadgeNumber(): number;
+  /** Take the next badge number, advancing a reset counter. */
+  takeBadgeNumber(): number;
+  resetBadgeCounter(): void;
+  /** Set a badge's number by hand; others keep theirs. */
+  setBadgeNumber(id: string, n: number): void;
 }
 
 /** Keep only ids still present in `doc`. */
@@ -139,14 +157,21 @@ function cloneWithOffset(
 ): AnnotationObject[] {
   return [...objs]
     .sort((a, b) => a.z - b.z)
-    .map((o, i) => ({
-      ...translate(structuredClone(o), offset, offset),
-      id: newId(),
-      z: base + i + 1,
-    }));
+    .map((o, i) => {
+      const c = {
+        ...translate(structuredClone(o), offset, offset),
+        id: newId(),
+        z: base + i + 1,
+      } as AnnotationObject;
+      // Copied badges take the next numbers.
+      if (c.type === "badge") c.n = useEditor.getState().takeBadgeNumber();
+      return c;
+    });
 }
 
 let toastId = 0;
+/** Numbers handed out but not yet committed (copies built before one commit). */
+let pendingBadge = 0;
 const centre = (s: Size): Point => ({ x: s.width / 2, y: s.height / 2 });
 
 export const useEditor = create<EditorState>((set, get) => ({
@@ -173,6 +198,10 @@ export const useEditor = create<EditorState>((set, get) => ({
   drawing: null,
   editingText: null,
   editingIsNew: false,
+  editingBadge: null,
+  liveSize: null,
+  badgeCounter: null,
+  badgeRenumber: true,
 
   loadImage(bitmap, source) {
     const prev = get().bitmap;
@@ -190,11 +219,14 @@ export const useEditor = create<EditorState>((set, get) => ({
       selection: [],
       drawing: null,
       editingText: null,
+      editingBadge: null,
+      badgeCounter: null,
     });
     get().fit();
   },
   commit(doc) {
     const { history, fitted } = get();
+    pendingBadge = 0;
     if (!history) return;
     const next = H.commit(history, doc);
     set({
@@ -337,8 +369,13 @@ export const useEditor = create<EditorState>((set, get) => ({
     const doc = get().document;
     if (!doc || !ids.length) return;
     const sel = new Set(ids);
-    const objects = doc.objects.filter((o) => !sel.has(o.id));
+    let objects = doc.objects.filter((o) => !sel.has(o.id));
     if (objects.length === doc.objects.length) return;
+    const badgeGone = doc.objects.some((o) => sel.has(o.id) && o.type === "badge");
+    if (badgeGone && get().badgeRenumber) {
+      objects = renumberBadges(objects);
+      set({ badgeCounter: null });
+    }
     get().commit({ ...doc, objects });
     set({ selection: get().selection.filter((id) => !sel.has(id)) });
   },
@@ -413,5 +450,27 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
   setEditingText(id, isNew = false) {
     set({ editingText: id, editingIsNew: id ? isNew : false });
+  },
+  setEditingBadge(id) {
+    set({ editingBadge: id });
+  },
+  nextBadgeNumber() {
+    const { document: doc, badgeCounter } = get();
+    return (badgeCounter ?? maxBadgeNext(doc?.objects ?? [])) + pendingBadge;
+  },
+  takeBadgeNumber() {
+    const n = get().nextBadgeNumber();
+    if (get().badgeCounter !== null) set({ badgeCounter: get().badgeCounter! + 1 });
+    else pendingBadge++;
+    return n;
+  },
+  resetBadgeCounter() {
+    set({ badgeCounter: 1 });
+  },
+  setBadgeNumber(id, n) {
+    const v = Math.max(0, Math.round(n));
+    if (!Number.isFinite(v)) return;
+    set({ badgeCounter: null });
+    get().updateObjects([id], { n: v });
   },
 }));

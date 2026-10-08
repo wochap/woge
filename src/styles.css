@@ -944,3 +944,32 @@ kbd {
 .text-editor {
   z-index: 4;
 }
+.strip-readout {
+  color: var(--subtext);
+  font-size: 12px;
+  min-width: 3ch;
+}
+.strip-hint {
+  color: var(--overlay, var(--subtext));
+  font-size: 11px;
+  opacity: 0.8;
+}
+.strip-slider {
+  width: 120px;
+  accent-color: var(--accent);
+}
+.strip-btn {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--subtext);
+  padding: 3px 10px;
+}
+.strip-btn:hover {
+  color: var(--text);
+}
+.badge-editor::-webkit-inner-spin-button,
+.badge-editor::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

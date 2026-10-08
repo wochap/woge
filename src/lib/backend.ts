@@ -39,6 +39,7 @@ export interface LaunchOptions {
   /** Config `[defaults]`. */
   defaults?: ConfigDefaults;
   toolSticky?: boolean;
+  badgeRenumber?: boolean;
 }
 
 export interface ConfigDefaults {

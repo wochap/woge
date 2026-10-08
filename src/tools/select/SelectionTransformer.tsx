@@ -57,6 +57,28 @@ function fold(o: AnnotationObject, node: Konva.Node, anchor: string | null): Ann
       }
       return { ...o, x: node.x(), y: node.y(), size: clampTextSize(o.size * Math.abs(sy)) };
     }
+    case "brush":
+    case "highlight": {
+      const nx = node.x();
+      const ny = node.y();
+      node.position({ x: 0, y: 0 });
+      const points = o.points.map((v, i) => (i % 2 ? v * sy + ny : v * sx + nx));
+      return { ...o, points };
+    }
+    case "redact": {
+      const w = o.w * sx;
+      const h = o.h * sy;
+      return {
+        ...o,
+        x: node.x() + Math.min(0, w),
+        y: node.y() + Math.min(0, h),
+        w: Math.abs(w),
+        h: Math.abs(h),
+      };
+    }
+    case "badge":
+      // Size comes from S/M/L; only the centre moves.
+      return { ...o, x: node.x(), y: node.y() };
     default:
       return o;
   }
@@ -78,7 +100,7 @@ function liveFold(node: Konva.Node) {
   }
 }
 
-/** Box transformer for selected rects, ellipses and texts; arrows use endpoint handles. */
+/** Box transformer for selected objects; arrows use endpoint handles. */
 export function SelectionTransformer() {
   const ref = useRef<Konva.Transformer>(null);
   const selection = useEditor((s) => s.selection);
@@ -89,6 +111,8 @@ export function SelectionTransformer() {
   const sel = new Set(selection);
   const objs = doc?.objects.filter((o) => sel.has(o.id) && o.type !== "arrow") ?? [];
   const active = tool === "select" && !editing;
+  // Badges never resize: a badge-only selection shows just the outline.
+  const anchors = objs.length && objs.every((o) => o.type === "badge") ? [] : ALL;
 
   useEffect(() => {
     const tr = ref.current;
@@ -122,7 +146,7 @@ export function SelectionTransformer() {
       keepRatio={false}
       ignoreStroke
       flipEnabled={false}
-      enabledAnchors={ALL}
+      enabledAnchors={anchors}
       anchorSize={ANCHOR_PX}
       anchorStroke={accent}
       anchorFill={bg}

@@ -44,6 +44,7 @@ import {
   selectionBounds,
 } from "./tools/select/useSelectTool";
 import { openTextEditor } from "./tools/text/editing";
+import { openBadgeEditor } from "./tools/badge/editing";
 import { boundsOf } from "./model/objects";
 
 /** Ctrl+C copies objects when any are selected, the image otherwise. */
@@ -64,6 +65,7 @@ export default function App() {
     useEditor.getState().setCheckerboard(opts.checkerboard);
     useOutput.getState().configure(opts);
     useSettings.getState().init(opts.defaults, opts.toolSticky ?? true);
+    useEditor.setState({ badgeRenumber: opts.badgeRenumber ?? true });
   }, []);
   const { dropActive, openDialog, openClipboard } = useInputs(onLaunch);
 
@@ -116,6 +118,10 @@ export default function App() {
     "tool.ellipse": (e) => selectTool("ellipse", e),
     "tool.arrow": (e) => selectTool("arrow", e),
     "tool.text": (e) => selectTool("text", e),
+    "tool.brush": (e) => selectTool("brush", e),
+    "tool.highlighter": (e) => selectTool("highlighter", e),
+    "tool.redact": (e) => selectTool("redact", e),
+    "tool.counter": (e) => selectTool("counter", e),
     "edit.delete": () => editingObjects && deleteSelection(),
     "edit.duplicate": () => editingObjects && s.duplicate(s.selection),
     "edit.selectAll": () => {
@@ -150,6 +156,7 @@ export default function App() {
       if (e.key === "Enter") {
         const only = s.selection.length === 1 && doc.objects.find((o) => o.id === s.selection[0]);
         if (only && only.type === "text") openTextEditor(only.id);
+        else if (only && only.type === "badge") openBadgeEditor(only.id);
       } else if (s.selection.length) s.clearSelection();
       else if (s.activeTool !== "select") s.setActiveTool("select");
     },
@@ -193,6 +200,7 @@ export default function App() {
   if (s.mode === "crop" && s.cropDraft) statusDetail = formatCropStatus(s.cropDraft);
   else if (s.mode === "resize" && doc && s.resizeDraft)
     statusDetail = `scale ${percentOf(originalSize(doc), s.resizeDraft)}%`;
+  else if (s.liveSize) statusDetail = `${Math.round(s.liveSize.w)} × ${Math.round(s.liveSize.h)}`;
   else if (s.drawing && s.drawing.type !== "text") {
     const b = boundsOf(s.drawing);
     statusDetail = `${Math.round(b.w)} × ${Math.round(b.h)}`;

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type Konva from "konva";
-import type { Rect } from "../../model/document";
+import { rotatedDims, type Dims, type Rect } from "../../model/document";
 import type { Point } from "../../model/geometry";
 import {
   boundsOf,
@@ -17,15 +17,17 @@ import { rectFromDrag } from "../../model/geometry";
 const store = useEditor.getState;
 
 /** Ids of objects whose bounds intersect `r`. */
-export function objectsInRect(objects: AnnotationObject[], r: Rect): string[] {
-  return objects.filter((o) => intersects(boundsOf(o), r)).map((o) => o.id);
+export function objectsInRect(objects: AnnotationObject[], r: Rect, image?: Dims): string[] {
+  return objects.filter((o) => intersects(boundsOf(o, image), r)).map((o) => o.id);
 }
 
 export function selectionBounds(): Rect | null {
   const { document: doc, selection } = store();
   if (!doc) return null;
   const sel = new Set(selection);
-  return unionBounds(doc.objects.filter((o) => sel.has(o.id)).map(boundsOf));
+  return unionBounds(
+    doc.objects.filter((o) => sel.has(o.id)).map((o) => boundsOf(o, rotatedDims(doc))),
+  );
 }
 
 /** Click on an object: Shift toggles, otherwise select it unless already selected. */
@@ -54,7 +56,7 @@ export function reorderSelection(dir: ReorderDir) {
 export function marqueeSelect(r: Rect, additive: boolean) {
   const s = store();
   if (!s.document) return;
-  const hit = objectsInRect(s.document.objects, r);
+  const hit = objectsInRect(s.document.objects, r, rotatedDims(s.document));
   s.select(additive ? [...s.selection, ...hit] : hit);
 }
 

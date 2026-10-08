@@ -6,6 +6,8 @@ import { trackDrag, docPoint } from "../../canvas/pointer";
 import { newId } from "../../model/objects";
 import { isShapeTool, shapeFromDrag, tooSmall } from "./math";
 import { afterCreate, startNewText } from "../text/editing";
+import { startFreehand } from "../freehand/useFreehandTool";
+import { placeBadge } from "../badge/editing";
 
 /** Stage pointer down for drawing tools: press-drag-release creates one object. */
 export function useShapeTool() {
@@ -19,6 +21,9 @@ export function useShapeTool() {
       startNewText(docPoint(stage, e.evt.clientX, e.evt.clientY));
       return;
     }
+    if (tool === "brush") return startFreehand(e, "brush");
+    if (tool === "highlighter") return startFreehand(e, "highlight");
+    if (tool === "counter") return placeBadge(docPoint(stage, e.evt.clientX, e.evt.clientY));
     if (!isShapeTool(tool)) return;
     s.clearSelection();
     trackDrag(

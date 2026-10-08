@@ -59,7 +59,42 @@ export interface TextObj extends Base {
   plate: boolean;
 }
 
-export type AnnotationObject = RectObj | EllipseObj | ArrowObj | TextObj;
+export interface StrokeObj extends Base {
+  type: "brush" | "highlight";
+  /** Flat `[x0, y0, x1, y1, …]` in rotated-image space. */
+  points: number[];
+  stroke: ColorKey;
+  strokeWidth: StrokeWidth;
+  /** Brush only: render with curve tension. */
+  smooth?: boolean;
+}
+
+export type RedactMode = "pixelate" | "blur";
+
+export interface RedactObj extends Base {
+  type: "redact";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  mode: RedactMode;
+  strength: number;
+}
+
+export type BadgeSize = "S" | "M" | "L";
+
+export interface BadgeObj extends Base {
+  type: "badge";
+  /** Centre. */
+  x: number;
+  y: number;
+  n: number;
+  color: ColorKey;
+  size: BadgeSize;
+}
+
+export type AnnotationObject =
+  RectObj | EllipseObj | ArrowObj | TextObj | StrokeObj | RedactObj | BadgeObj;
 export type ObjectType = AnnotationObject["type"];
 /** An object before it joins the document: id and z are assigned by the store. */
 export type NewObject = AnnotationObject extends infer T
@@ -72,10 +107,22 @@ export type NewObject = AnnotationObject extends infer T
 export type ObjectPatch = Partial<
   Omit<RectObj, "type" | "id"> &
     Omit<ArrowObj, "type" | "id"> &
-    Omit<TextObj, "type" | "id" | "w"> & { w: number | undefined }
+    Omit<TextObj, "type" | "id" | "w" | "size"> &
+    Omit<StrokeObj, "type" | "id"> &
+    Omit<RedactObj, "type" | "id" | "x" | "y" | "w" | "h"> &
+    Omit<BadgeObj, "type" | "id" | "size" | "x" | "y" | "color"> & {
+      w: number | undefined;
+      /** Text: font size; badge: S/M/L. */
+      size: number | BadgeSize;
+    }
 >;
 
 export const STROKE_PX: Record<StrokeWidth, number> = { S: 2, M: 4, L: 8 };
+export const HIGHLIGHT_PX: Record<StrokeWidth, number> = { S: 12, M: 20, L: 32 };
+export const BADGE_PX: Record<BadgeSize, number> = { S: 22, M: 28, L: 36 };
+export const HIGHLIGHT_ALPHA = 0.5;
+export const PIXELATE_RANGE = { min: 4, max: 64, default: 12 } as const;
+export const BLUR_RANGE = { min: 2, max: 40, default: 8 } as const;
 export const FILL_ALPHA = 0.25;
 export const TEXT_SIZE_MIN = 8;
 export const TEXT_SIZE_MAX = 200;
@@ -87,9 +134,51 @@ export function resolveColor(key: ColorKey, flavour: Flavour): string {
   return PALETTE[flavour][key] ?? PALETTE[flavour].red;
 }
 
-/** Stroke pixels relative to the image so widths look alike on 1080p and 4k. */
+/** Image-relative factor so widths look alike on 1080p and 4k. */
+export function imageFactor(size: Dims | undefined): number {
+  return size ? Math.max(1, Math.min(size.w, size.h) / 1080) : 1;
+}
+
 export function strokePx(width: StrokeWidth, size: Dims): number {
-  return STROKE_PX[width] * Math.max(1, Math.min(size.w, size.h) / 1080);
+  return STROKE_PX[width] * imageFactor(size);
+}
+
+/** Line width of a brush or highlight stroke. */
+export function freehandPx(o: Pick<StrokeObj, "type" | "strokeWidth">, size: Dims): number {
+  return (o.type === "highlight" ? HIGHLIGHT_PX : STROKE_PX)[o.strokeWidth] * imageFactor(size);
+}
+
+export function badgePx(size: BadgeSize, image: Dims | undefined): number {
+  return BADGE_PX[size] * imageFactor(image);
+}
+
+export function clampStrength(mode: RedactMode, n: number): number {
+  const r = mode === "blur" ? BLUR_RANGE : PIXELATE_RANGE;
+  return Math.min(r.max, Math.max(r.min, Math.round(n)));
+}
+
+export function pointsBounds(points: number[]): Rect {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (let i = 0; i + 1 < points.length; i += 2) {
+    x0 = Math.min(x0, points[i]);
+    x1 = Math.max(x1, points[i]);
+    y0 = Math.min(y0, points[i + 1]);
+    y1 = Math.max(y1, points[i + 1]);
+  }
+  if (x0 === Infinity) return { x: 0, y: 0, w: 0, h: 0 };
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+
+function mapPoints(points: number[], f: (p: Point) => Point): number[] {
+  const out: number[] = [];
+  for (let i = 0; i + 1 < points.length; i += 2) {
+    const q = f({ x: points[i], y: points[i + 1] });
+    out.push(q.x, q.y);
+  }
+  return out;
 }
 
 export function clampTextSize(n: number): number {
@@ -107,10 +196,19 @@ export function estimateTextSize(o: TextObj): Dims {
 /** Measured text sizes keyed by id, filled in by the renderer. */
 export const measuredText = new Map<string, Dims>();
 
-export function boundsOf(o: AnnotationObject): Rect {
+/** Object bounds; `image` (rotated-image dims) sizes badges, scale 1 when absent. */
+export function boundsOf(o: AnnotationObject, image?: Dims): Rect {
   switch (o.type) {
+    case "brush":
+    case "highlight":
+      return pointsBounds(o.points);
+    case "badge": {
+      const d = badgePx(o.size, image);
+      return { x: o.x - d / 2, y: o.y - d / 2, w: d, h: d };
+    }
     case "rect":
     case "ellipse":
+    case "redact":
       return { x: o.x, y: o.y, w: o.w, h: o.h };
     case "arrow":
       return {
@@ -142,10 +240,15 @@ export function intersects(a: Rect, b: Rect): boolean {
 export function translate<T extends AnnotationObject>(o: T, dx: number, dy: number): T {
   if (o.type === "arrow")
     return { ...o, x1: o.x1 + dx, y1: o.y1 + dy, x2: o.x2 + dx, y2: o.y2 + dy };
-  return { ...o, x: o.x + dx, y: o.y + dy };
+  if (o.type === "brush" || o.type === "highlight")
+    return { ...o, points: mapPoints(o.points, (p) => ({ x: p.x + dx, y: p.y + dy })) };
+  return { ...o, x: (o as RectObj).x + dx, y: (o as RectObj).y + dy };
 }
 
-/** Map `o` from bounds `from` to bounds `to` (box transform). Text scales its font size. */
+/**
+ * Map `o` from bounds `from` to bounds `to` (box transform). Text scales its font size;
+ * stroke widths stay; badges only move their centre.
+ */
 export function scaleObj<T extends AnnotationObject>(o: T, from: Rect, to: Rect): T {
   const sx = from.w ? to.w / from.w : 1;
   const sy = from.h ? to.h / from.h : 1;
@@ -154,7 +257,13 @@ export function scaleObj<T extends AnnotationObject>(o: T, from: Rect, to: Rect)
   switch (o.type) {
     case "rect":
     case "ellipse":
+    case "redact":
       return { ...o, x: mx(o.x), y: my(o.y), w: o.w * sx, h: o.h * sy };
+    case "brush":
+    case "highlight":
+      return { ...o, points: mapPoints(o.points, (p) => ({ x: mx(p.x), y: my(p.y) })) };
+    case "badge":
+      return { ...o, x: mx(o.x), y: my(o.y) };
     case "arrow":
       return { ...o, x1: mx(o.x1), y1: my(o.y1), x2: mx(o.x2), y2: my(o.y2) };
     case "text":
@@ -177,10 +286,16 @@ export function rotateObject90<T extends AnnotationObject>(
 ): T {
   switch (o.type) {
     case "rect":
-    case "ellipse": {
+    case "ellipse":
+    case "redact": {
       const r = rotateRect90(o, w, h, dir);
       return { ...o, ...r };
     }
+    case "brush":
+    case "highlight":
+      return { ...o, points: mapPoints(o.points, (p) => rotatePoint90(p, w, h, dir)) };
+    case "badge":
+      return { ...o, ...rotatePoint90(o, w, h, dir) };
     case "arrow": {
       const a = rotatePoint90({ x: o.x1, y: o.y1 }, w, h, dir);
       const b = rotatePoint90({ x: o.x2, y: o.y2 }, w, h, dir);
@@ -256,13 +371,53 @@ export function applyPatch(o: AnnotationObject, patch: ObjectPatch): AnnotationO
     ellipse: ["x", "y", "w", "h", "z", "stroke", "strokeWidth", "fill"],
     arrow: ["x1", "y1", "x2", "y2", "z", "heads", "stroke", "strokeWidth"],
     text: ["x", "y", "w", "z", "text", "color", "font", "size", "bold", "plate"],
+    brush: ["points", "z", "stroke", "strokeWidth", "smooth"],
+    highlight: ["points", "z", "stroke", "strokeWidth"],
+    redact: ["x", "y", "w", "h", "z", "mode", "strength"],
+    badge: ["x", "y", "z", "n", "color", "size"],
   };
   const next: Record<string, unknown> = { ...o };
   for (const k of keys[o.type]) if (k in patch) next[k] = (patch as Record<string, unknown>)[k];
-  // Text colour and shape stroke share the swatch control.
-  if (o.type === "text" && patch.stroke !== undefined && patch.color === undefined)
-    next.color = patch.stroke;
-  if (o.type !== "text" && patch.color !== undefined && patch.stroke === undefined)
+  // `size` is a number for text and S/M/L for badges; ignore the other kind.
+  if (o.type === "text" && typeof next.size !== "number") next.size = o.size;
+  if (o.type === "badge" && !(["S", "M", "L"] as unknown[]).includes(next.size)) next.size = o.size;
+  if (o.type === "redact" && (patch.mode !== undefined || patch.strength !== undefined))
+    next.strength = clampStrength(next.mode as RedactMode, next.strength as number);
+  // Text/badge colour and stroke colour share the swatch control.
+  const colored = o.type === "text" || o.type === "badge";
+  if (colored && patch.stroke !== undefined && patch.color === undefined) next.color = patch.stroke;
+  if (!colored && o.type !== "redact" && patch.color !== undefined && patch.stroke === undefined)
     next.stroke = patch.color;
   return next as unknown as AnnotationObject;
 }
+
+// --- Counter badges ---
+
+export function badgesOf(objects: AnnotationObject[]): BadgeObj[] {
+  return objects.filter((o): o is BadgeObj => o.type === "badge");
+}
+
+/** `max(n) + 1` over existing badges, 1 when none. */
+export function nextBadgeNumber(objects: AnnotationObject[]): number {
+  return badgesOf(objects).reduce((m, b) => Math.max(m, b.n), 0) + 1;
+}
+
+/** Renumber badges 1..k keeping their sequence (by number, then z); other objects untouched. */
+export function renumberBadges(objects: AnnotationObject[]): AnnotationObject[] {
+  const order = badgesOf(objects).sort((a, b) => a.n - b.n || a.z - b.z);
+  const num = new Map(order.map((b, i) => [b.id, i + 1]));
+  return objects.map((o) => (o.type === "badge" ? { ...o, n: num.get(o.id)! } : o));
+}
+
+/** Number colour for a badge: dark crust on light colours, light base on dark ones. */
+export function badgeTextColor(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const lin = (c: number) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const l = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return l > 0.375 ? BADGE_DARK : BADGE_LIGHT;
+}
+export const BADGE_DARK = "#11111b";
+export const BADGE_LIGHT = "#eff1f5";

@@ -43,3 +43,34 @@ describe("tool settings", () => {
     expect(mergeState(base, "garbage").tools).toEqual(base);
   });
 });
+
+describe("paint tool settings", () => {
+  it("built-in defaults", () => {
+    const d = builtInDefaults();
+    expect(d.brush).toEqual({ stroke: "red", strokeWidth: "M", smooth: true });
+    expect(d.highlight).toEqual({ stroke: "yellow", strokeWidth: "M" });
+    expect(d.redact).toEqual({ mode: "pixelate", strength: 12 });
+    expect(d.badge).toEqual({ color: "mauve", size: "M" });
+  });
+
+  it("restores paint tools from state, clamping strength", () => {
+    const { tools } = mergeState(builtInDefaults(), {
+      version: 1,
+      tools: {
+        redact: { mode: "blur", strength: 16 },
+        badge: { color: "blue", size: "L" },
+        brush: { smooth: false },
+        highlight: { stroke: "green", strokeWidth: "bogus" },
+      },
+    });
+    expect(tools.redact).toEqual({ mode: "blur", strength: 16 });
+    expect(tools.badge).toEqual({ color: "blue", size: "L" });
+    expect(tools.brush.smooth).toBe(false);
+    expect(tools.highlight).toEqual({ stroke: "green", strokeWidth: "M" });
+    const big = mergeState(builtInDefaults(), {
+      version: 1,
+      tools: { redact: { mode: "blur", strength: 99 } },
+    });
+    expect(big.tools.redact.strength).toBe(40);
+  });
+});

@@ -2,11 +2,11 @@ import { rectFromDrag, type Point } from "../../model/geometry";
 import { newId, snap45, type AnnotationObject, type TextObj } from "../../model/objects";
 import type { ToolSettings } from "../../store/settings";
 
-export type ShapeTool = "rect" | "ellipse" | "arrow";
+export type ShapeTool = "rect" | "ellipse" | "arrow" | "redact";
 export const MIN_SIZE = 3;
 
 export function isShapeTool(t: string): t is ShapeTool {
-  return t === "rect" || t === "ellipse" || t === "arrow";
+  return t === "rect" || t === "ellipse" || t === "arrow" || t === "redact";
 }
 
 /** Object spanned by a drag from `a` to `b`; Shift constrains, Alt draws from the centre. */
@@ -33,6 +33,7 @@ export function shapeFromDrag(
     };
   }
   const r = rectFromDrag(a, b, mods.shift ? 1 : null, mods.alt);
+  if (tool === "redact") return { id, z: 0, type: "redact", ...r, ...settings.redact };
   return { id, z: 0, type: tool, ...r, ...settings[tool] };
 }
 
@@ -40,7 +41,7 @@ export function shapeFromDrag(
 export function tooSmall(o: AnnotationObject): boolean {
   if (o.type === "arrow")
     return Math.abs(o.x2 - o.x1) < MIN_SIZE && Math.abs(o.y2 - o.y1) < MIN_SIZE;
-  if (o.type === "text") return false;
+  if (o.type !== "rect" && o.type !== "ellipse" && o.type !== "redact") return false;
   return o.w < MIN_SIZE && o.h < MIN_SIZE;
 }
 

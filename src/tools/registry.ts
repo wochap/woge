@@ -73,10 +73,10 @@ export const TOOLBAR: ToolbarEntry[] = [
   t("ellipse", "Ellipse", "O", Circle, "tool.ellipse", true),
   t("arrow", "Arrow", "A", ArrowUpRight, "tool.arrow", true),
   t("text", "Text", "T", TextT, "tool.text", true),
-  t("brush", "Brush", "B", PaintBrush, "tool.brush"),
-  t("highlighter", "Highlighter", "H", Highlighter, "tool.highlighter"),
-  t("redact", "Redact", "X", EyeSlash, "tool.redact"),
-  t("counter", "Counter badge", "N", NumberCircleOne, "tool.counter"),
+  t("brush", "Brush", "B", PaintBrush, "tool.brush", true),
+  t("highlighter", "Highlighter", "H", Highlighter, "tool.highlighter", true),
+  t("redact", "Redact", "X", EyeSlash, "tool.redact", true),
+  t("counter", "Counter badge", "N", NumberCircleOne, "tool.counter", true),
 ];
 
 export const HISTORY: ToolDef[] = [

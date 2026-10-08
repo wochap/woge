@@ -83,15 +83,27 @@ describe("TopBar", () => {
 });
 
 describe("Toolbar", () => {
-  it("lists every tool; geometry and annotation tools enabled, history follows availability", () => {
+  it("lists every tool, all enabled; history follows availability", () => {
     render(<Toolbar activeTool="select" hasDocument showHistory onSelect={noop} />);
     const select = screen.getByRole("button", { name: "Select" });
     expect(select).toBeEnabled();
     expect(select).toHaveClass("active");
-    for (const n of ["Crop", "Resize", "Rotate", "Rectangle", "Ellipse", "Arrow", "Text"]) {
+    for (const n of [
+      "Crop",
+      "Resize",
+      "Rotate",
+      "Rectangle",
+      "Ellipse",
+      "Arrow",
+      "Text",
+      "Brush",
+      "Highlighter",
+      "Redact",
+      "Counter badge",
+    ]) {
       expect(screen.getByRole("button", { name: n })).toBeEnabled();
     }
-    for (const n of ["Brush", "Highlighter", "Redact", "Counter badge", "Undo", "Redo"]) {
+    for (const n of ["Undo", "Redo"]) {
       expect(screen.getByRole("button", { name: n })).toBeDisabled();
     }
   });

@@ -1,16 +1,7 @@
 import type { Flavour } from "../lib/theme";
 
 export type ColorKey =
-  | "red"
-  | "peach"
-  | "yellow"
-  | "green"
-  | "teal"
-  | "blue"
-  | "mauve"
-  | "pink"
-  | "white"
-  | "black";
+  "red" | "peach" | "yellow" | "green" | "teal" | "blue" | "mauve" | "pink" | "white" | "black";
 
 /** Swatch order in the options strip (design board 1i). */
 export const SWATCHES: ColorKey[] = [

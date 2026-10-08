@@ -16,7 +16,8 @@ describe("keymap", () => {
   it("matches modifiers exactly", () => {
     expect(matchBinding("ctrl+o", "o")?.id).toBe("file.open");
     expect(matchBinding("o", "o")?.id).toBe("tool.ellipse");
-    expect(matchBinding("b", "b")).toBeUndefined(); // Brush not enabled yet
+    expect(matchBinding("b", "b")?.id).toBe("tool.brush");
+    expect(matchBinding("ctrl+b", "b")).toBeUndefined();
     expect(matchBinding("ctrl+shift+}", "}")?.id).toBe("edit.forward");
     expect(matchBinding("ctrl+d", "d")?.id).toBe("edit.duplicate");
     expect(matchBinding("ctrl+shift+z", "z")?.id).toBe("edit.undo");

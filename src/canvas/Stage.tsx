@@ -11,6 +11,8 @@ import { ArrowHandles } from "../tools/select/ArrowHandles";
 import { useSelectTool } from "../tools/select/useSelectTool";
 import { useShapeTool } from "../tools/shapes/useShapeTool";
 import { TextEditorOverlay } from "../tools/text/TextEditorOverlay";
+import { BadgeEditorOverlay } from "../tools/badge/BadgeEditorOverlay";
+import { DRAFT_GROUP } from "../tools/freehand/useFreehandTool";
 import { cssVar } from "./useHandles";
 import { rotatedDims, type Document, type Rect } from "../model/document";
 import { imageToScreen } from "../lib/viewport";
@@ -140,6 +142,7 @@ export function Stage({ checkerboard, children }: Props) {
                 scaleY={shown.size.h / shown.crop.h}
               >
                 <ArrowHandles docScale={docScale} />
+                <Group name={DRAFT_GROUP} listening={false} />
                 {marquee && (
                   <KRect
                     x={marquee.x}
@@ -170,6 +173,7 @@ export function Stage({ checkerboard, children }: Props) {
         />
       )}
       {doc && mode === "none" && <TextEditorOverlay />}
+      {doc && mode === "none" && <BadgeEditorOverlay />}
       {children}
     </div>
   );

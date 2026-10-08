@@ -79,8 +79,14 @@ export function buildExportStage(
   const group = new Konva.Group(groupAttrs(doc));
   group.add(new Konva.Image({ image: bitmap, ...imageAttrs(doc) }));
   const objects = new Konva.Group({ name: "objects" });
-  for (const n of buildObjectNodes(doc.objects, { flavour, image: rotatedDims(doc) }))
-    objects.add(n as Konva.Shape | Konva.Group);
+  const ctx = {
+    flavour,
+    image: rotatedDims(doc),
+    bitmap,
+    base: { w: doc.source.width, h: doc.source.height },
+    rotation: doc.rotation,
+  };
+  for (const n of buildObjectNodes(doc.objects, ctx)) objects.add(n as Konva.Shape | Konva.Group);
   group.add(objects);
   layer.add(group);
   stage.add(layer);

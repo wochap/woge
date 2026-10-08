@@ -3,6 +3,10 @@ import { useSettings } from "../../store/settings";
 import { stripContext } from "./apply";
 import { ArrowStrip, EllipseStrip, MixedStrip, RectStrip } from "./ShapeStrips";
 import { TextStrip } from "./TextStrip";
+import { BrushStrip } from "./BrushStrip";
+import { HighlighterStrip } from "./HighlighterStrip";
+import { RedactStrip } from "./RedactStrip";
+import { BadgeStrip } from "./BadgeStrip";
 
 /** Strip for the active drawing tool, or for the selection's type in Select. */
 export function useAnnotationStrip() {
@@ -22,6 +26,14 @@ export function useAnnotationStrip() {
       return <ArrowStrip ctx={ctx} />;
     case "text":
       return <TextStrip ctx={ctx} />;
+    case "brush":
+      return <BrushStrip ctx={ctx} />;
+    case "highlight":
+      return <HighlighterStrip ctx={ctx} />;
+    case "redact":
+      return <RedactStrip ctx={ctx} />;
+    case "badge":
+      return <BadgeStrip ctx={ctx} />;
     default:
       return <MixedStrip ctx={ctx} />;
   }

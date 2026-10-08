@@ -145,6 +145,7 @@ pub struct LaunchOptions {
     /// Config `[defaults]` seeding tool settings.
     pub defaults: crate::config::Defaults,
     pub tool_sticky: bool,
+    pub badge_renumber: bool,
 }
 
 #[cfg(test)]

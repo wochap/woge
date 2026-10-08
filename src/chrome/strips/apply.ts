@@ -13,6 +13,15 @@ export interface StripContext {
   targets: AnnotationObject[];
 }
 
+/** Object type a drawing tool creates, if any. */
+export function toolObjectType(tool: string): ObjectType | null {
+  if (isShapeTool(tool) || tool === "text") return tool;
+  if (tool === "brush") return "brush";
+  if (tool === "highlighter") return "highlight";
+  if (tool === "counter") return "badge";
+  return null;
+}
+
 /** Which strip to show: the drawing tool's, or the selection's type(s) in Select. */
 export function stripContext(
   tool: string,
@@ -21,9 +30,8 @@ export function stripContext(
 ): StripContext | null {
   const sel = new Set(selection);
   const selected = objects.filter((o) => sel.has(o.id));
-  if (isShapeTool(tool) || tool === "text") {
-    return { kind: tool, types: [tool], targets: selected.filter((o) => o.type === tool) };
-  }
+  const type = toolObjectType(tool);
+  if (type) return { kind: type, types: [type], targets: selected.filter((o) => o.type === type) };
   if (tool !== "select" || !selected.length) return null;
   const types = [...new Set(selected.map((o) => o.type))];
   return { kind: types.length === 1 ? types[0] : "mixed", types, targets: selected };
@@ -34,7 +42,7 @@ export function applyStyle(ctx: StripContext, patch: SettingsPatch) {
   const settings = useSettings.getState();
   for (const t of ctx.types) {
     const p: SettingsPatch = { ...patch };
-    if (t === "text" && patch.stroke) p.color = patch.stroke;
+    if ((t === "text" || t === "badge") && patch.stroke) p.color = patch.stroke;
     settings.setTool(t, p);
   }
   if (ctx.targets.length)

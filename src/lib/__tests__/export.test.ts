@@ -106,6 +106,41 @@ describe("exportDocument", () => {
     expect(node.getAttr("strokeWidth")).toBe(4);
     stage.destroy();
   });
+
+  it("bakes redact regions: cached, filtered crop of the base bitmap", () => {
+    const d: Document = {
+      ...rotateDocument(doc(), "cw"),
+      objects: [
+        {
+          id: "x1",
+          z: 1,
+          type: "redact",
+          x: 10,
+          y: 20,
+          w: 30,
+          h: 40,
+          mode: "pixelate",
+          strength: 16,
+        },
+        { id: "x2", z: 2, type: "redact", x: 0, y: 0, w: 5, h: 5, mode: "blur", strength: 8 },
+      ],
+    };
+    const cache = vi.spyOn(Konva.Image.prototype, "cache");
+    const stage = buildExportStage(d, bitmap, "png");
+    const img = (stage.findOne("#x1") as Konva.Group).findOne("Image") as Konva.Image;
+    expect(img.image()).toBe(bitmap);
+    expect(img.filters()).toEqual([Konva.Filters.Pixelate]);
+    expect(img.pixelSize()).toBe(16);
+    expect(img.rotation()).toBe(90);
+    // Rotated-space (10, 20, 30×40) maps back to base (20, 1040, 40×30) for a 1920×1080 base.
+    expect(img.crop()).toEqual({ x: 20, y: 1040, width: 40, height: 30 });
+    const blur = (stage.findOne("#x2") as Konva.Group).findOne("Image") as Konva.Image;
+    expect(blur.filters()).toEqual([Konva.Filters.Blur]);
+    expect(blur.blurRadius()).toBe(8);
+    expect(cache).toHaveBeenCalledTimes(2);
+    expect(cache).toHaveBeenCalledWith({ pixelRatio: 1 });
+    stage.destroy();
+  });
 });
 
 describe("format resolution", () => {

@@ -56,6 +56,7 @@ pub struct FileConfig {
     #[serde(default)]
     pub hooks: Hooks,
     pub tool_sticky: Option<bool>,
+    pub badge_renumber: Option<bool>,
     #[serde(default)]
     pub defaults: Defaults,
 }
@@ -76,6 +77,7 @@ pub struct Effective {
     pub copy_command: Option<Vec<String>>,
     pub hooks: Hooks,
     pub tool_sticky: bool,
+    pub badge_renumber: bool,
     pub defaults: Defaults,
 }
 
@@ -204,6 +206,7 @@ pub fn resolve(cli: &Cli, file: &FileConfig) -> Effective {
         copy_command: file.copy.command.clone().filter(|c| !c.is_empty()),
         hooks: file.hooks.clone(),
         tool_sticky: file.tool_sticky.unwrap_or(true),
+        badge_renumber: file.badge_renumber.unwrap_or(true),
         defaults: file.defaults.clone(),
     }
 }
@@ -325,10 +328,12 @@ mod tests {
     fn defaults_and_sticky() {
         let e = resolve(&cli(&[]), &FileConfig::default());
         assert!(e.tool_sticky);
+        assert!(e.badge_renumber);
         assert_eq!(e.defaults, Defaults::default());
-        let f = parse(Path::new("c"), "tool_sticky = false\n[defaults]\ncolor = \"blue\"\nstroke = \"L\"\nfont_size = 32\n").unwrap();
+        let f = parse(Path::new("c"), "tool_sticky = false\nbadge_renumber = false\n[defaults]\ncolor = \"blue\"\nstroke = \"L\"\nfont_size = 32\n").unwrap();
         let e = resolve(&cli(&[]), &f);
         assert!(!e.tool_sticky);
+        assert!(!e.badge_renumber);
         assert_eq!(e.defaults.color.as_deref(), Some("blue"));
         assert_eq!(e.defaults.font_size, Some(32));
         let msg = parse(Path::new("c"), "[defaults]\ncolor = \"chartreuse\"").unwrap_err().to_string();

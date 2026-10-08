@@ -82,6 +82,7 @@ pub fn run() -> i32 {
         scripted: cli.scripted(),
         defaults: eff.defaults.clone(),
         tool_sticky: eff.tool_sticky,
+        badge_renumber: eff.badge_renumber,
     };
 
     let backups = output::Backups::new(output::Backups::default_dir());
