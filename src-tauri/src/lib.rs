@@ -4,11 +4,13 @@ mod app;
 mod cli;
 mod clipboard;
 mod config;
+mod fonts;
 mod hooks;
 mod input;
 mod lifecycle;
 mod logging;
 mod output;
+mod state;
 
 use clap::Parser;
 use tauri::Manager;
@@ -78,6 +80,8 @@ pub fn run() -> i32 {
         jpeg_quality: eff.jpeg_quality,
         webp_quality: eff.webp_quality,
         scripted: cli.scripted(),
+        defaults: eff.defaults.clone(),
+        tool_sticky: eff.tool_sticky,
     };
 
     let backups = output::Backups::new(output::Backups::default_dir());
@@ -96,6 +100,9 @@ pub fn run() -> i32 {
             app::copy_image,
             app::run_hook,
             app::print_saved_path,
+            fonts::list_fonts,
+            state::read_state,
+            state::write_state,
         ])
         .build(tauri::generate_context!());
     let app = match app {

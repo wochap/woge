@@ -62,29 +62,57 @@ on_load = ["notify-send", "woge", "loaded {input}"]
 on_save = ["notify-send", "woge", "saved {output}"]
 on_copy = []
 on_exit = []
+
+tool_sticky = true    # false: return to Select after drawing each object
+
+[defaults]
+# seeds tool settings; remembered settings win
+color = "red"         # red peach yellow green teal blue mauve pink white black
+stroke = "M"          # S | M | L
+font = "Inter Variable"
+font_size = 24        # 8–200
 ```
 
 Hooks replace `{input}`, `{output}`, `{width}`, `{height}` and `{format}` inside each argument (never splitting it) and get `WOGE_INPUT`, `WOGE_OUTPUT`, `WOGE_WIDTH`, `WOGE_HEIGHT`, `WOGE_FORMAT` plus `WOGE_EXIT_CODE` for `on_exit`. They run detached with output in the log; failures never change the editor outcome. `on_exit` is awaited for at most 2 seconds.
 
 Command line flags beat the config file. Logs go to `~/.local/state/woge/woge.log`.
 
+The last colour, width, fill, arrowheads, font, size, bold and plate of each tool, plus recently used fonts, are remembered in `$XDG_STATE_HOME/woge/state.json` (default `~/.local/state/woge/state.json`). A corrupt file is ignored and overwritten. Fonts come from fontconfig (`fc-list`) plus the bundled Inter and JetBrains Mono.
+
+### Tools
+
+- **Select** (`V`): click, Shift+click to toggle, drag on empty space to marquee. Drag to move, handles to resize (Shift keeps aspect, Alt from centre); arrows show endpoint handles.
+- **Rectangle** (`R`), **Ellipse** (`O`): colour, width S/M/L, fill. Shift = square/circle, Alt = from centre.
+- **Arrow** (`A`): colour, width, head at End or Both. Shift snaps to 45°.
+- **Text** (`T`): click to place and type; double click or Enter to edit; `Ctrl+Enter` or click away commits, `Esc` cancels. Colour, font, size, bold, background plate.
+
+Colours follow the theme flavour's palette at export time.
+
 ## Shortcuts
 
 | Action | Keys |
 | --- | --- |
-| Select tool | `V` |
+| Select / Rectangle / Ellipse / Arrow / Text | `V` `R` `O` `A` `T` |
+| Delete selection | `Delete`, `Backspace` |
+| Nudge selection | Arrows, `Shift` for 10px |
+| Duplicate / Alt+drag duplicate | `Ctrl D` |
+| Select all | `Ctrl A` |
+| Copy / cut / paste objects | `Ctrl C` / `Ctrl X` / `Ctrl V` |
+| Forward / backward, to front / back | `Ctrl ]` / `Ctrl [`, with `Shift` |
+| Text size | `Ctrl Shift >` / `<` |
+| Edit text / deselect | `Enter` / `Esc` |
 | Pan | Scroll, Space + drag, middle drag |
 | Zoom | Ctrl + Scroll, pinch |
 | Fit / actual size | `Shift+1` / `Shift+0` |
 | Zoom in / out | `Ctrl +` / `Ctrl −` |
 | Open | `Ctrl O` |
-| Paste image | `Ctrl V` |
-| Copy result | `Ctrl C` |
+| Paste image (no copied objects) | `Ctrl V` |
+| Copy result (nothing selected) | `Ctrl C` |
 | Save / Save as | `Ctrl S` / `Ctrl Shift S` |
 | Shortcuts overlay | `?` |
 | Quit | `Ctrl Q` |
 
-Annotation tools are listed in the UI but arrive in later changes.
+Brush, highlighter, redact and counter badge are listed in the UI but arrive in a later change.
 
 ## Development
 

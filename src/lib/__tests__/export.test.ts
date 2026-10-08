@@ -1,5 +1,11 @@
 import Konva from "konva";
-import { exportDocument, formatFromExt, resolveFormat, rewriteExtension } from "../export";
+import {
+  buildExportStage,
+  exportDocument,
+  formatFromExt,
+  resolveFormat,
+  rewriteExtension,
+} from "../export";
 import { newDocument, type Document } from "../../model/document";
 import { rotateDocument } from "../../model/geometry";
 import { useEditor } from "../../store/editor";
@@ -74,6 +80,31 @@ describe("exportDocument", () => {
   it("falls back to PNG when WebP cannot be encoded", async () => {
     const r = await exportDocument(doc(), bitmap, "webp", 0.9);
     expect(r.format).toBe("png");
+  });
+
+  it("exports objects with the flavour's palette", () => {
+    const d: Document = {
+      ...doc(),
+      objects: [
+        {
+          id: "r1",
+          type: "rect",
+          z: 1,
+          x: 200,
+          y: 100,
+          w: 50,
+          h: 40,
+          stroke: "red",
+          strokeWidth: "M",
+          fill: false,
+        },
+      ],
+    };
+    const stage = buildExportStage(d, bitmap, "png", "latte");
+    const node = stage.findOne("#r1")!;
+    expect(node.getAttr("stroke")).toBe("#d20f39");
+    expect(node.getAttr("strokeWidth")).toBe(4);
+    stage.destroy();
   });
 });
 

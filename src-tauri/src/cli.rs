@@ -142,6 +142,9 @@ pub struct LaunchOptions {
     pub jpeg_quality: u8,
     pub webp_quality: u8,
     pub scripted: bool,
+    /// Config `[defaults]` seeding tool settings.
+    pub defaults: crate::config::Defaults,
+    pub tool_sticky: bool,
 }
 
 #[cfg(test)]

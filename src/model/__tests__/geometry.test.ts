@@ -1,3 +1,4 @@
+import type { Document } from "../document";
 import { describe, expect, it } from "vitest";
 import { newDocument } from "../document";
 import {
@@ -40,10 +41,23 @@ describe("rotate", () => {
     const d = {
       ...newDocument(src),
       crop: { x: 100, y: 50, w: 800, h: 600 },
-      objects: [{ id: "a", kind: "dot", x: 100, y: 50 }],
+      objects: [
+        {
+          id: "a",
+          type: "arrow",
+          z: 1,
+          x1: 100,
+          y1: 50,
+          x2: 100,
+          y2: 50,
+          heads: "end",
+          stroke: "red",
+          strokeWidth: "M",
+        },
+      ] as Document["objects"],
     };
     const r = rotateDocument(d, "cw");
-    expect(r.objects[0]).toMatchObject({ x: r.crop.x + r.crop.w, y: r.crop.y });
+    expect(r.objects[0]).toMatchObject({ x1: r.crop.x + r.crop.w, y1: r.crop.y });
   });
 
   it("point and rect helpers agree", () => {

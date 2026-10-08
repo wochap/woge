@@ -12,14 +12,8 @@ export interface Dims {
   h: number;
 }
 
-/** Placeholder until annotation tools land; positioned in rotated-image space. */
-export interface AnnotationObject {
-  id: string;
-  kind: string;
-  x: number;
-  y: number;
-  [key: string]: unknown;
-}
+export type { AnnotationObject } from "./objects";
+import type { AnnotationObject } from "./objects";
 
 export interface DocumentSource {
   /** null for stdin/clipboard inputs (no Save in place). */

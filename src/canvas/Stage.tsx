@@ -1,10 +1,18 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Konva from "konva";
-import { Layer, Stage as KonvaStage } from "react-konva";
+import { Group, Layer, Rect as KRect, Stage as KonvaStage } from "react-konva";
 import { useEditor } from "../store/editor";
 import { useNavigation } from "./useNavigation";
-import { DocumentGroup } from "./DocumentGroup";
-import { rotatedDims, type Document } from "../model/document";
+import { DocumentGroup, groupAttrs } from "./DocumentGroup";
+import { ObjectsLayer } from "./ObjectsLayer";
+import { OBJECTS_ROOT } from "./pointer";
+import { SelectionTransformer } from "../tools/select/SelectionTransformer";
+import { ArrowHandles } from "../tools/select/ArrowHandles";
+import { useSelectTool } from "../tools/select/useSelectTool";
+import { useShapeTool } from "../tools/shapes/useShapeTool";
+import { TextEditorOverlay } from "../tools/text/TextEditorOverlay";
+import { cssVar } from "./useHandles";
+import { rotatedDims, type Document, type Rect } from "../model/document";
 import { imageToScreen } from "../lib/viewport";
 import { CropOverlay } from "../tools/crop/CropOverlay";
 import { ResizeOverlay } from "../tools/resize/ResizeOverlay";
@@ -12,6 +20,7 @@ import { FloatingConfirm } from "../chrome/FloatingConfirm";
 import { cancelMode, confirmMode } from "../tools/mode";
 
 Konva.pixelRatio = window.devicePixelRatio || 1;
+Konva.dragDistance = 3;
 
 interface Props {
   checkerboard: boolean;
@@ -30,6 +39,16 @@ export function Stage({ checkerboard, children }: Props) {
   const size = useEditor((s) => s.canvasSize);
   const setCanvasSize = useEditor((s) => s.setCanvasSize);
   const { panReady, panning } = useNavigation(ref);
+  const tool = useEditor((s) => s.activeTool);
+  const [marquee, setMarquee] = useState<Rect | null>(null);
+  const selectDown = useSelectTool(setMarquee);
+  const shapeDown = useShapeTool();
+  const onStageDown = (e: Konva.KonvaEventObject<PointerEvent>) => {
+    if (mode !== "none" || e.evt.button !== 0) return;
+    if (tool === "select") {
+      if (e.target === e.target.getStage()) selectDown(e);
+    } else shapeDown(e);
+  };
 
   useEffect(() => {
     const el = ref.current;
@@ -42,6 +61,7 @@ export function Stage({ checkerboard, children }: Props) {
     let mq: MediaQueryList | null = null;
     const onDpr = () => {
       Konva.pixelRatio = window.devicePixelRatio || 1;
+      Konva.dragDistance = 3;
       watchDpr();
     };
     const watchDpr = () => {
@@ -95,6 +115,7 @@ export function Stage({ checkerboard, children }: Props) {
           scaleX={view.scale}
           scaleY={view.scale}
           listening={!panning}
+          onPointerDown={onStageDown}
         >
           <Layer
             name="document"
@@ -103,7 +124,38 @@ export function Stage({ checkerboard, children }: Props) {
           >
             {shown && bitmap && <DocumentGroup doc={shown} bitmap={bitmap} />}
           </Layer>
+          <Layer name="objects" listening={mode === "none"}>
+            {shown && (
+              <Group name={OBJECTS_ROOT} {...groupAttrs(shown)}>
+                <ObjectsLayer doc={shown} />
+              </Group>
+            )}
+          </Layer>
           <Layer name="ui">
+            {shown && mode === "none" && (
+              <Group
+                offsetX={shown.crop.x}
+                offsetY={shown.crop.y}
+                scaleX={docScale}
+                scaleY={shown.size.h / shown.crop.h}
+              >
+                <ArrowHandles docScale={docScale} />
+                {marquee && (
+                  <KRect
+                    x={marquee.x}
+                    y={marquee.y}
+                    width={marquee.w}
+                    height={marquee.h}
+                    stroke={cssVar("--accent") || "#cba6f7"}
+                    strokeWidth={1 / (view.scale * docScale)}
+                    dash={[4 / (view.scale * docScale), 3 / (view.scale * docScale)]}
+                    fill="rgba(127,127,127,0.08)"
+                    listening={false}
+                  />
+                )}
+              </Group>
+            )}
+            {mode === "none" && <SelectionTransformer />}
             {mode === "crop" && <CropOverlay />}
             {mode === "resize" && <ResizeOverlay />}
           </Layer>
@@ -117,6 +169,7 @@ export function Stage({ checkerboard, children }: Props) {
           onCancel={cancelMode}
         />
       )}
+      {doc && mode === "none" && <TextEditorOverlay />}
       {children}
     </div>
   );

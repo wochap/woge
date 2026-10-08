@@ -33,10 +33,22 @@ import { CropStrip } from "./tools/crop/CropStrip";
 import { ResizeStrip } from "./tools/resize/ResizeStrip";
 import { formatCropStatus } from "./tools/crop/math";
 import { originalSize, percentOf } from "./tools/resize/math";
+import { useSettings } from "./store/settings";
+import { useAnnotationStrip } from "./chrome/strips/AnnotationStrip";
+import { stripContext } from "./chrome/strips/apply";
+import { stepTextSize } from "./chrome/strips/TextStrip";
+import {
+  deleteSelection,
+  nudgeSelection,
+  reorderSelection,
+  selectionBounds,
+} from "./tools/select/useSelectTool";
+import { openTextEditor } from "./tools/text/editing";
+import { boundsOf } from "./model/objects";
 
-/** Annotation selection lands with the annotation tools; until then Ctrl+C always copies. */
+/** Ctrl+C copies objects when any are selected, the image otherwise. */
 function hasSelection(): boolean {
-  return false;
+  return useEditor.getState().selection.length > 0;
 }
 
 export default function App() {
@@ -51,6 +63,7 @@ export default function App() {
     useEditor.getState().setStatusLine(opts.statusLine);
     useEditor.getState().setCheckerboard(opts.checkerboard);
     useOutput.getState().configure(opts);
+    useSettings.getState().init(opts.defaults, opts.toolSticky ?? true);
   }, []);
   const { dropActive, openDialog, openClipboard } = useInputs(onLaunch);
 
@@ -96,8 +109,29 @@ export default function App() {
     useEditor.getState().redo();
   };
 
+  const editingObjects = !!s.document && !inMode;
   const handlers: KeyHandlers = {
     "tool.select": (e) => selectTool("select", e),
+    "tool.rect": (e) => selectTool("rect", e),
+    "tool.ellipse": (e) => selectTool("ellipse", e),
+    "tool.arrow": (e) => selectTool("arrow", e),
+    "tool.text": (e) => selectTool("text", e),
+    "edit.delete": () => editingObjects && deleteSelection(),
+    "edit.duplicate": () => editingObjects && s.duplicate(s.selection),
+    "edit.selectAll": () => {
+      if (!editingObjects) return;
+      s.setActiveTool("select");
+      s.selectAll();
+    },
+    "edit.cut": () => editingObjects && s.cutObjects(),
+    "edit.forward": (e) => editingObjects && reorderSelection(e.shiftKey ? "front" : "forward"),
+    "edit.backward": (e) => editingObjects && reorderSelection(e.shiftKey ? "back" : "backward"),
+    "text.size": (e) => {
+      if (!editingObjects || !doc) return;
+      const ctx = stripContext(s.activeTool, s.selection, doc.objects);
+      if (ctx?.kind !== "text") return;
+      stepTextSize(ctx, e.key === ">" || e.key === "." ? 1 : -1);
+    },
     "tool.crop": (e) => selectTool("crop", e),
     "tool.resize": (e) => selectTool("resize", e),
     "tool.rotate": (e) => selectTool("rotate", e),
@@ -107,26 +141,39 @@ export default function App() {
       else undo();
     },
     "edit.applyCancel": (e) => {
-      if (!inMode) return;
-      if (e.key === "Enter") confirmMode();
-      else cancelMode();
+      if (inMode) {
+        if (e.key === "Enter") confirmMode();
+        else cancelMode();
+        return;
+      }
+      if (!doc) return;
+      if (e.key === "Enter") {
+        const only = s.selection.length === 1 && doc.objects.find((o) => o.id === s.selection[0]);
+        if (only && only.type === "text") openTextEditor(only.id);
+      } else if (s.selection.length) s.clearSelection();
+      else if (s.activeTool !== "select") s.setActiveTool("select");
     },
     "edit.nudge": (e) => {
-      if (!inMode) return;
       const step = e.shiftKey ? 10 : 1;
       const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
       const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
-      nudge(dx, dy);
+      if (inMode) nudge(dx, dy);
+      else if (editingObjects) nudgeSelection(dx, dy);
     },
     "view.fit": s.fit,
     "view.actual": s.actualSize,
     "view.zoomIn": () => s.zoomStep(1),
     "view.zoomOut": () => s.zoomStep(-1),
     "file.open": openDialog,
-    "file.paste": openClipboard,
+    "file.paste": () => {
+      if (editingObjects && s.pasteObjects()) return;
+      openClipboard();
+    },
     "app.shortcuts": () => setOverlayOpen(true),
     "file.copy": () => {
-      if (s.document && !inMode && !hasSelection()) copyResult();
+      if (!s.document || inMode) return;
+      if (hasSelection()) s.copyObjects();
+      else copyResult();
     },
     "file.save": () => {
       if (s.document && !inMode) save();
@@ -146,6 +193,14 @@ export default function App() {
   if (s.mode === "crop" && s.cropDraft) statusDetail = formatCropStatus(s.cropDraft);
   else if (s.mode === "resize" && doc && s.resizeDraft)
     statusDetail = `scale ${percentOf(originalSize(doc), s.resizeDraft)}%`;
+  else if (s.drawing && s.drawing.type !== "text") {
+    const b = boundsOf(s.drawing);
+    statusDetail = `${Math.round(b.w)} × ${Math.round(b.h)}`;
+  } else if (s.selection.length) {
+    const b = selectionBounds();
+    if (b) statusDetail = `sel ${Math.round(b.w)} × ${Math.round(b.h)}`;
+  }
+  const annotationStrip = useAnnotationStrip();
   const history = {
     canUndo: !!doc && canUndo(s.history),
     canRedo: !!doc && canRedo(s.history),
@@ -185,9 +240,15 @@ export default function App() {
         {...history}
         onSelect={selectTool}
       />
-      {/* Modes render their controls here; Select has none. */}
+      {/* Modes and annotation tools render their controls here. */}
       <OptionsStrip compact={compact.narrow}>
-        {s.mode === "crop" ? <CropStrip /> : s.mode === "resize" ? <ResizeStrip /> : null}
+        {s.mode === "crop" ? (
+          <CropStrip />
+        ) : s.mode === "resize" ? (
+          <ResizeStrip />
+        ) : (
+          annotationStrip
+        )}
       </OptionsStrip>
       <Stage checkerboard={s.checkerboard}>
         {!doc && <EmptyState dropActive={dropActive} />}

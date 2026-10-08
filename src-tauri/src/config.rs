@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::cli::{Cli, Format, OnSave, Theme};
 
@@ -28,6 +28,18 @@ pub struct Hooks {
     pub on_exit: Vec<String>,
 }
 
+/// `[defaults]`: seeds per-tool settings; remembered state wins.
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct Defaults {
+    pub color: Option<String>,
+    pub stroke: Option<String>,
+    pub font: Option<String>,
+    pub font_size: Option<u32>,
+}
+
+const COLORS: [&str; 10] = ["red", "peach", "yellow", "green", "teal", "blue", "mauve", "pink", "white", "black"];
+
 #[derive(Debug, Default, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct FileConfig {
@@ -43,6 +55,9 @@ pub struct FileConfig {
     pub copy: CopyConfig,
     #[serde(default)]
     pub hooks: Hooks,
+    pub tool_sticky: Option<bool>,
+    #[serde(default)]
+    pub defaults: Defaults,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -60,6 +75,8 @@ pub struct Effective {
     /// `None` means the default shotclip command with the wl-copy fallback.
     pub copy_command: Option<Vec<String>>,
     pub hooks: Hooks,
+    pub tool_sticky: bool,
+    pub defaults: Defaults,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -107,6 +124,25 @@ fn check_quality(key: &str, q: Option<i64>) -> Result<(), String> {
     }
 }
 
+fn check_defaults(d: &Defaults) -> Result<(), String> {
+    if let Some(c) = &d.color {
+        if !COLORS.contains(&c.as_str()) {
+            return Err(format!("`defaults.color` must be one of {}, got \"{c}\"", COLORS.join(", ")));
+        }
+    }
+    if let Some(s) = &d.stroke {
+        if !["S", "M", "L"].contains(&s.as_str()) {
+            return Err(format!("`defaults.stroke` must be S, M or L, got \"{s}\""));
+        }
+    }
+    if let Some(n) = d.font_size {
+        if !(8..=200).contains(&n) {
+            return Err(format!("`defaults.font_size` must be between 8 and 200, got {n}"));
+        }
+    }
+    Ok(())
+}
+
 pub fn parse(path: &Path, text: &str) -> Result<FileConfig, ConfigError> {
     let err = |message: String| ConfigError::Parse { path: path.to_owned(), message };
     let value: toml::Value = toml::from_str(text).map_err(|e: toml::de::Error| err(e.message().trim().to_owned()))?;
@@ -114,6 +150,7 @@ pub fn parse(path: &Path, text: &str) -> Result<FileConfig, ConfigError> {
     let file: FileConfig = toml::from_str(text).map_err(|e: toml::de::Error| err(e.message().trim().to_owned()))?;
     check_quality("jpeg_quality", file.jpeg_quality).map_err(err)?;
     check_quality("webp_quality", file.webp_quality).map_err(err)?;
+    check_defaults(&file.defaults).map_err(err)?;
     Ok(file)
 }
 
@@ -166,6 +203,8 @@ pub fn resolve(cli: &Cli, file: &FileConfig) -> Effective {
         webp_quality: file.webp_quality.map_or(DEFAULT_WEBP_QUALITY, |q| q as u8),
         copy_command: file.copy.command.clone().filter(|c| !c.is_empty()),
         hooks: file.hooks.clone(),
+        tool_sticky: file.tool_sticky.unwrap_or(true),
+        defaults: file.defaults.clone(),
     }
 }
 
@@ -280,6 +319,22 @@ mod tests {
         assert!(msg.contains("hooks.on_exit"), "{msg}");
         let msg = parse(Path::new("c"), "[hooks]\non_lunch = []").unwrap_err().to_string();
         assert!(msg.contains("on_lunch"), "{msg}");
+    }
+
+    #[test]
+    fn defaults_and_sticky() {
+        let e = resolve(&cli(&[]), &FileConfig::default());
+        assert!(e.tool_sticky);
+        assert_eq!(e.defaults, Defaults::default());
+        let f = parse(Path::new("c"), "tool_sticky = false\n[defaults]\ncolor = \"blue\"\nstroke = \"L\"\nfont_size = 32\n").unwrap();
+        let e = resolve(&cli(&[]), &f);
+        assert!(!e.tool_sticky);
+        assert_eq!(e.defaults.color.as_deref(), Some("blue"));
+        assert_eq!(e.defaults.font_size, Some(32));
+        let msg = parse(Path::new("c"), "[defaults]\ncolor = \"chartreuse\"").unwrap_err().to_string();
+        assert!(msg.contains("defaults.color"), "{msg}");
+        assert!(parse(Path::new("c"), "[defaults]\nstroke = \"XL\"").is_err());
+        assert!(parse(Path::new("c"), "[defaults]\nfont_size = 1").is_err());
     }
 
     #[test]

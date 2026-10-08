@@ -36,6 +36,16 @@ export interface LaunchOptions {
   jpegQuality: number;
   webpQuality: number;
   scripted: boolean;
+  /** Config `[defaults]`. */
+  defaults?: ConfigDefaults;
+  toolSticky?: boolean;
+}
+
+export interface ConfigDefaults {
+  color?: string | null;
+  stroke?: string | null;
+  font?: string | null;
+  font_size?: number | null;
 }
 
 export interface LoadedInput {
@@ -112,4 +122,16 @@ export async function pickSavePath(defaultPath: string): Promise<string | null> 
     ],
   });
   return picked ?? null;
+}
+
+export function listFonts(): Promise<string[]> {
+  return invoke("list_fonts");
+}
+
+export function readState(): Promise<unknown | null> {
+  return invoke("read_state");
+}
+
+export function writeState(state: unknown): Promise<void> {
+  return invoke("write_state", { state });
 }

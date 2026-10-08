@@ -23,6 +23,20 @@ import {
 } from "../model/document";
 import { rotateDocument, type Dir } from "../model/geometry";
 import * as H from "./history";
+import {
+  applyPatch,
+  maxZ,
+  newId,
+  reorder as reorderObjects,
+  translate,
+  type AnnotationObject,
+  type NewObject,
+  type ObjectPatch,
+  type ReorderDir,
+} from "../model/objects";
+
+export const DUPLICATE_OFFSET = 10;
+type ObjectUpdate = ObjectPatch | ((o: AnnotationObject) => AnnotationObject);
 import type { CropPreset } from "../tools/crop/math";
 
 export type Mode = "none" | "crop" | "resize";
@@ -63,6 +77,16 @@ interface EditorState {
   pointer: Point | null;
   checkerboard: boolean;
   statusLine: boolean;
+  /** Selected annotation object ids. */
+  selection: string[];
+  /** In-memory object clipboard (session only). */
+  objectClipboard: AnnotationObject[];
+  /** Object being drawn by a shape tool; not yet in the document. */
+  drawing: AnnotationObject | null;
+  /** Text object currently open in the in-place editor. */
+  editingText: string | null;
+  /** True while the text being edited was just created (cancel removes it). */
+  editingIsNew: boolean;
 
   loadImage(bitmap: ImageBitmap, source: DocumentSource): void;
   commit(doc: Document): void;
@@ -85,6 +109,41 @@ interface EditorState {
   setPointer(screen: Point | null): void;
   setCheckerboard(on: boolean): void;
   setStatusLine(on: boolean): void;
+
+  addObject(obj: NewObject): string | null;
+  updateObjects(ids: string[], update: ObjectUpdate): void;
+  deleteObjects(ids: string[]): void;
+  duplicate(ids: string[], offset?: number): string[];
+  reorder(ids: string[], dir: ReorderDir): void;
+  select(ids: string[]): void;
+  toggleSelect(id: string): void;
+  selectAll(): void;
+  clearSelection(): void;
+  copyObjects(): boolean;
+  cutObjects(): boolean;
+  pasteObjects(): boolean;
+  setDrawing(obj: AnnotationObject | null): void;
+  setEditingText(id: string | null, isNew?: boolean): void;
+}
+
+/** Keep only ids still present in `doc`. */
+function prune(selection: string[], doc: Document): string[] {
+  const ids = new Set(doc.objects.map((o) => o.id));
+  return selection.filter((id) => ids.has(id));
+}
+
+function cloneWithOffset(
+  objs: AnnotationObject[],
+  base: number,
+  offset: number,
+): AnnotationObject[] {
+  return [...objs]
+    .sort((a, b) => a.z - b.z)
+    .map((o, i) => ({
+      ...translate(structuredClone(o), offset, offset),
+      id: newId(),
+      z: base + i + 1,
+    }));
 }
 
 let toastId = 0;
@@ -109,6 +168,11 @@ export const useEditor = create<EditorState>((set, get) => ({
   pointer: null,
   checkerboard: false,
   statusLine: true,
+  selection: [],
+  objectClipboard: [],
+  drawing: null,
+  editingText: null,
+  editingIsNew: false,
 
   loadImage(bitmap, source) {
     const prev = get().bitmap;
@@ -123,6 +187,9 @@ export const useEditor = create<EditorState>((set, get) => ({
       cropDraft: null,
       resizeDraft: null,
       activeTool: "select",
+      selection: [],
+      drawing: null,
+      editingText: null,
     });
     get().fit();
   },
@@ -130,7 +197,11 @@ export const useEditor = create<EditorState>((set, get) => ({
     const { history, fitted } = get();
     if (!history) return;
     const next = H.commit(history, doc);
-    set({ history: next, document: next.present });
+    set({
+      history: next,
+      document: next.present,
+      selection: prune(get().selection, next.present),
+    });
     if (fitted) get().fit();
   },
   undo() {
@@ -144,6 +215,8 @@ export const useEditor = create<EditorState>((set, get) => ({
       cropDraft: null,
       resizeDraft: null,
       activeTool: "select",
+      selection: prune(get().selection, next.present),
+      editingText: null,
     });
     if (fitted) get().fit();
   },
@@ -158,6 +231,8 @@ export const useEditor = create<EditorState>((set, get) => ({
       cropDraft: null,
       resizeDraft: null,
       activeTool: "select",
+      selection: prune(get().selection, next.present),
+      editingText: null,
     });
     if (fitted) get().fit();
   },
@@ -234,5 +309,109 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
   setStatusLine(on) {
     set({ statusLine: on });
+  },
+
+  addObject(obj) {
+    const doc = get().document;
+    if (!doc) return null;
+    const id = obj.id ?? newId();
+    const full = { ...obj, id, z: maxZ(doc.objects) + 1 } as AnnotationObject;
+    get().commit({ ...doc, objects: [...doc.objects, full] });
+    set({ selection: [id] });
+    return id;
+  },
+  updateObjects(ids, update) {
+    const doc = get().document;
+    if (!doc || !ids.length) return;
+    const sel = new Set(ids);
+    let changed = false;
+    const objects = doc.objects.map((o) => {
+      if (!sel.has(o.id)) return o;
+      const n = typeof update === "function" ? update(o) : applyPatch(o, update);
+      if (JSON.stringify(n) !== JSON.stringify(o)) changed = true;
+      return n;
+    });
+    if (changed) get().commit({ ...doc, objects });
+  },
+  deleteObjects(ids) {
+    const doc = get().document;
+    if (!doc || !ids.length) return;
+    const sel = new Set(ids);
+    const objects = doc.objects.filter((o) => !sel.has(o.id));
+    if (objects.length === doc.objects.length) return;
+    get().commit({ ...doc, objects });
+    set({ selection: get().selection.filter((id) => !sel.has(id)) });
+  },
+  duplicate(ids, offset = DUPLICATE_OFFSET) {
+    const doc = get().document;
+    if (!doc || !ids.length) return [];
+    const sel = new Set(ids);
+    const copies = cloneWithOffset(
+      doc.objects.filter((o) => sel.has(o.id)),
+      maxZ(doc.objects),
+      offset,
+    );
+    if (!copies.length) return [];
+    get().commit({ ...doc, objects: [...doc.objects, ...copies] });
+    const out = copies.map((o) => o.id);
+    set({ selection: out });
+    return out;
+  },
+  reorder(ids, dir) {
+    const doc = get().document;
+    if (!doc || !ids.length) return;
+    const objects = reorderObjects(doc.objects, ids, dir);
+    const before = doc.objects
+      .map((o) => `${o.id}:${o.z}`)
+      .sort()
+      .join();
+    const after = objects
+      .map((o) => `${o.id}:${o.z}`)
+      .sort()
+      .join();
+    if (before !== after) get().commit({ ...doc, objects });
+  },
+  select(ids) {
+    set({ selection: [...new Set(ids)] });
+  },
+  toggleSelect(id) {
+    const sel = get().selection;
+    set({ selection: sel.includes(id) ? sel.filter((s) => s !== id) : [...sel, id] });
+  },
+  selectAll() {
+    set({ selection: get().document?.objects.map((o) => o.id) ?? [] });
+  },
+  clearSelection() {
+    if (get().selection.length) set({ selection: [] });
+  },
+  copyObjects() {
+    const { document: doc, selection } = get();
+    if (!doc || !selection.length) return false;
+    const sel = new Set(selection);
+    set({ objectClipboard: structuredClone(doc.objects.filter((o) => sel.has(o.id))) });
+    return true;
+  },
+  cutObjects() {
+    if (!get().copyObjects()) return false;
+    get().deleteObjects(get().selection);
+    return true;
+  },
+  pasteObjects() {
+    const { document: doc, objectClipboard } = get();
+    if (!doc || !objectClipboard.length) return false;
+    const copies = cloneWithOffset(objectClipboard, maxZ(doc.objects), DUPLICATE_OFFSET);
+    get().commit({ ...doc, objects: [...doc.objects, ...copies] });
+    // Repeated pastes cascade.
+    set({
+      selection: copies.map((o) => o.id),
+      objectClipboard: objectClipboard.map((o) => translate(o, DUPLICATE_OFFSET, DUPLICATE_OFFSET)),
+    });
+    return true;
+  },
+  setDrawing(obj) {
+    set({ drawing: obj });
+  },
+  setEditingText(id, isNew = false) {
+    set({ editingText: id, editingIsNew: id ? isNew : false });
   },
 }));

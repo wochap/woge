@@ -1,6 +1,8 @@
 import Konva from "konva";
 import { groupAttrs, imageAttrs } from "../canvas/DocumentGroup";
-import type { Document } from "../model/document";
+import { rotatedDims, type Document } from "../model/document";
+import { buildObjectNodes, currentFlavour } from "../canvas/objectNodes";
+import type { Flavour } from "./theme";
 import type { Format } from "./backend";
 
 export const MIME: Record<Format, string> = {
@@ -61,7 +63,12 @@ function toBlob(canvas: HTMLCanvasElement, type: string, quality?: number): Prom
 }
 
 /** Builds the document nodes on a detached stage of exactly `size`, at pixelRatio 1. */
-export function buildExportStage(doc: Document, bitmap: CanvasImageSource, format: Format) {
+export function buildExportStage(
+  doc: Document,
+  bitmap: CanvasImageSource,
+  format: Format,
+  flavour: Flavour = currentFlavour(),
+) {
   const { w, h } = doc.size;
   const container = window.document.createElement("div");
   const stage = new Konva.Stage({ container, width: w, height: h });
@@ -71,7 +78,10 @@ export function buildExportStage(doc: Document, bitmap: CanvasImageSource, forma
     layer.add(new Konva.Rect({ x: 0, y: 0, width: w, height: h, fill: "#fff" }));
   const group = new Konva.Group(groupAttrs(doc));
   group.add(new Konva.Image({ image: bitmap, ...imageAttrs(doc) }));
-  group.add(new Konva.Group({ name: "objects" }));
+  const objects = new Konva.Group({ name: "objects" });
+  for (const n of buildObjectNodes(doc.objects, { flavour, image: rotatedDims(doc) }))
+    objects.add(n as Konva.Shape | Konva.Group);
+  group.add(objects);
   layer.add(group);
   stage.add(layer);
   return stage;

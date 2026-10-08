@@ -1,5 +1,6 @@
 import type { Dims, Document, Rect, Rotation } from "./document";
 import { rotatedDims } from "./document";
+import { rotateObject90 } from "./objects";
 
 export interface Point {
   x: number;
@@ -30,7 +31,7 @@ export function rotateDocument(doc: Document, dir: Dir): Document {
     rotation,
     crop: rotateRect90(doc.crop, w, h, dir),
     size: { w: doc.size.h, h: doc.size.w },
-    objects: doc.objects.map((o) => ({ ...o, ...rotatePoint90(o, w, h, dir) })),
+    objects: doc.objects.map((o) => rotateObject90(o, w, h, dir)),
   };
 }
 
