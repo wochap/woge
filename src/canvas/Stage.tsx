@@ -1,8 +1,15 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import Konva from "konva";
-import { Image as KonvaImage, Layer, Stage as KonvaStage } from "react-konva";
+import { Layer, Stage as KonvaStage } from "react-konva";
 import { useEditor } from "../store/editor";
 import { useNavigation } from "./useNavigation";
+import { DocumentGroup } from "./DocumentGroup";
+import { rotatedDims, type Document } from "../model/document";
+import { imageToScreen } from "../lib/viewport";
+import { CropOverlay } from "../tools/crop/CropOverlay";
+import { ResizeOverlay } from "../tools/resize/ResizeOverlay";
+import { FloatingConfirm } from "../chrome/FloatingConfirm";
+import { cancelMode, confirmMode } from "../tools/mode";
 
 Konva.pixelRatio = window.devicePixelRatio || 1;
 
@@ -15,6 +22,10 @@ interface Props {
 export function Stage({ checkerboard, children }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const doc = useEditor((s) => s.document);
+  const bitmap = useEditor((s) => s.bitmap);
+  const mode = useEditor((s) => s.mode);
+  const cropDraft = useEditor((s) => s.cropDraft);
+  const resizeDraft = useEditor((s) => s.resizeDraft);
   const view = useEditor((s) => s.viewport);
   const size = useEditor((s) => s.canvasSize);
   const setCanvasSize = useEditor((s) => s.setCanvasSize);
@@ -45,6 +56,26 @@ export function Stage({ checkerboard, children }: Props) {
     };
   }, [setCanvasSize]);
 
+  // Crop mode shows the whole rotated image unscaled; resize mode previews the draft size.
+  let shown: Document | null = doc;
+  if (doc && mode === "crop") {
+    const full = rotatedDims(doc);
+    shown = { ...doc, crop: { x: 0, y: 0, ...full }, size: full };
+  } else if (doc && mode === "resize" && resizeDraft) shown = { ...doc, size: resizeDraft };
+  const docScale = shown ? shown.size.w / shown.crop.w : 1;
+
+  const anchor =
+    mode === "crop"
+      ? cropDraft
+      : mode === "resize" && resizeDraft
+        ? { x: 0, y: 0, ...resizeDraft }
+        : null;
+  let anchorScreen = null;
+  if (anchor) {
+    const a = imageToScreen(view, anchor);
+    anchorScreen = { x: a.x, y: a.y, w: anchor.w * view.scale, h: anchor.h * view.scale };
+  }
+
   const cls = [
     "canvas-area",
     checkerboard && "checker",
@@ -65,12 +96,26 @@ export function Stage({ checkerboard, children }: Props) {
           scaleY={view.scale}
           listening={!panning}
         >
-          <Layer name="image" listening={false} imageSmoothingEnabled={view.scale < 1}>
-            <KonvaImage image={doc.base} width={doc.width} height={doc.height} />
+          <Layer
+            name="document"
+            listening={false}
+            imageSmoothingEnabled={view.scale * docScale < 1}
+          >
+            {shown && bitmap && <DocumentGroup doc={shown} bitmap={bitmap} />}
           </Layer>
-          <Layer name="objects" />
-          <Layer name="ui" />
+          <Layer name="ui">
+            {mode === "crop" && <CropOverlay />}
+            {mode === "resize" && <ResizeOverlay />}
+          </Layer>
         </KonvaStage>
+      )}
+      {anchorScreen && (
+        <FloatingConfirm
+          rect={anchorScreen}
+          canvas={size}
+          onConfirm={confirmMode}
+          onCancel={cancelMode}
+        />
       )}
       {children}
     </div>

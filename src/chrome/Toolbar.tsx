@@ -7,10 +7,17 @@ interface Props {
   hasDocument: boolean;
   /** Undo/Redo live in the top bar when the window is short. */
   showHistory: boolean;
-  onSelect(tool: ToolId): void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onSelect(tool: ToolId, e: { shiftKey: boolean }): void;
+  onUndo?(): void;
+  onRedo?(): void;
 }
 
-export function Toolbar({ activeTool, hasDocument, showHistory, onSelect }: Props) {
+export function Toolbar(p: Props) {
+  const { activeTool, hasDocument, showHistory, onSelect } = p;
+  const can = { undo: !!p.canUndo, redo: !!p.canRedo };
+  const run = { undo: p.onUndo, redo: p.onRedo };
   return (
     <nav className="toolbar" aria-label="Tools">
       {TOOLBAR.map((entry, i) => {
@@ -23,7 +30,7 @@ export function Toolbar({ activeTool, hasDocument, showHistory, onSelect }: Prop
               className={active ? "tool-btn active" : "tool-btn"}
               aria-pressed={active}
               disabled={!entry.enabled || !hasDocument}
-              onClick={() => onSelect(id)}
+              onClick={(e) => onSelect(id, e)}
             >
               <entry.icon size="var(--toolbar-icon)" />
             </button>
@@ -36,7 +43,11 @@ export function Toolbar({ activeTool, hasDocument, showHistory, onSelect }: Prop
           {HISTORY.map((h) => (
             <Fragment key={h.id}>
               <Tooltip label={h.name} shortcut={h.shortcut} side="right">
-                <button className="tool-btn" disabled={!h.enabled}>
+                <button
+                  className="tool-btn"
+                  disabled={!hasDocument || !can[h.id as "undo" | "redo"]}
+                  onClick={() => run[h.id as "undo" | "redo"]?.()}
+                >
                   <h.icon size="var(--toolbar-icon)" />
                 </button>
               </Tooltip>

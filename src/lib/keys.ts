@@ -26,9 +26,9 @@ const b = (
 /** Every shortcut from the design's overlay (board 1f). */
 export const KEYMAP: KeyBinding[] = [
   b("tool.select", "Select", "tools", "V", ["v"], true),
-  b("tool.crop", "Crop", "tools", "C", ["c"]),
-  b("tool.resize", "Resize", "tools", "S", ["s"]),
-  b("tool.rotate", "Rotate / reverse", "tools", "L · ⇧L", ["l", "shift+l"]),
+  b("tool.crop", "Crop", "tools", "C", ["c"], true),
+  b("tool.resize", "Resize", "tools", "S", ["s"], true),
+  b("tool.rotate", "Rotate / reverse", "tools", "L · ⇧L", ["l", "shift+l"], true),
   b("tool.rect", "Rectangle", "tools", "R", ["r"]),
   b("tool.ellipse", "Ellipse", "tools", "O", ["o"]),
   b("tool.arrow", "Arrow", "tools", "A", ["a"]),
@@ -60,8 +60,16 @@ export const KEYMAP: KeyBinding[] = [
   b("file.copy", "Copy result", "file", "Ctrl C", ["ctrl+c"]),
   b("file.save", "Save", "file", "Ctrl S", ["ctrl+s"]),
   b("file.saveAs", "Save as", "file", "Ctrl ⇧S", ["ctrl+shift+s"]),
-  b("edit.undo", "Undo / Redo", "file", "Ctrl Z · ⇧Z", ["ctrl+z", "ctrl+shift+z"]),
-  b("edit.applyCancel", "Apply / Cancel", "file", "Enter · Esc", []),
+  b("edit.undo", "Undo / Redo", "file", "Ctrl Z · ⇧Z", ["ctrl+z", "ctrl+shift+z"], true),
+  b("edit.applyCancel", "Apply / Cancel", "file", "Enter · Esc", ["enter", "escape"], true),
+  b(
+    "edit.nudge",
+    "Nudge crop / size",
+    "file",
+    "Arrows · ⇧",
+    ["arrowleft", "arrowright", "arrowup", "arrowdown"].flatMap((k) => [k, `shift+${k}`]),
+    true,
+  ),
   b("edit.constrain", "Constrain (square, aspect)", "file", "Shift", []),
   b("app.shortcuts", "Shortcuts", "file", "?", ["?", "shift+?", "shift+/"], true),
   b("app.quit", "Quit", "file", "Ctrl Q", ["ctrl+q"], true),
@@ -116,7 +124,8 @@ export function isTextTarget(target: EventTarget | null): boolean {
   return false;
 }
 
-export type KeyHandlers = Partial<Record<string, () => void>>;
+/** Handlers receive the event so one binding can branch on Shift or the key. */
+export type KeyHandlers = Partial<Record<string, (e: KeyboardEvent) => void>>;
 
 export interface KeymapOptions {
   /** While true only `overlayKeys` handlers fire (the overlay owns the keyboard). */
@@ -134,7 +143,7 @@ export function dispatchKey(
     const k = e.key === "Escape" ? "escape" : e.key;
     if (k === "escape" || k === "?" || opts.overlayKeys?.includes(k)) {
       e.preventDefault();
-      handlers["overlay.close"]?.();
+      handlers["overlay.close"]?.(e);
       return true;
     }
     return false;
@@ -144,7 +153,7 @@ export function dispatchKey(
   const handler = handlers[binding.id];
   if (!handler) return false;
   e.preventDefault();
-  handler();
+  handler(e);
   return true;
 }
 

@@ -14,6 +14,10 @@ export interface TopBarProps {
   compactNarrow: boolean;
   compactShort: boolean;
   checkerboard: boolean;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?(): void;
+  onRedo?(): void;
   onFit(): void;
   onActual(): void;
   onZoomIn(): void;
@@ -105,7 +109,11 @@ export function TopBar(p: TopBarProps) {
         {p.compactShort &&
           HISTORY.map((h) => (
             <Tooltip key={h.id} label={h.name} shortcut={h.shortcut}>
-              <button className="btn btn-ghost btn-icon" disabled={!h.enabled}>
+              <button
+                className="btn btn-ghost btn-icon"
+                disabled={h.id === "undo" ? !p.canUndo : !p.canRedo}
+                onClick={h.id === "undo" ? p.onUndo : p.onRedo}
+              >
                 <h.icon size={15} />
               </button>
             </Tooltip>

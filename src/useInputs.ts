@@ -32,7 +32,7 @@ export function useInputs(onLaunch: (opts: LaunchOptions) => void) {
   const run = useCallback(
     async (name: string, fetchInput: () => Promise<LoadedInput>) => {
       const id = guard.begin();
-      const { setLoading, setDocument, showToast } = useEditor.getState();
+      const { setLoading, loadImage, showToast } = useEditor.getState();
       setLoading({ name });
       try {
         const loaded = await fetchInput();
@@ -45,11 +45,10 @@ export function useInputs(onLaunch: (opts: LaunchOptions) => void) {
           throw new Error(DECODE_ERROR);
         }
         if (!guard.isCurrent(id)) return bitmap.close();
-        setDocument({
-          base: bitmap,
+        loadImage(bitmap, {
+          path: loaded.sourcePath,
           width: bitmap.width,
           height: bitmap.height,
-          sourcePath: loaded.sourcePath,
           name: loaded.name,
         });
         setLoading(null);

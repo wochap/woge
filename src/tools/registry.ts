@@ -65,9 +65,9 @@ const t = (
 
 export const TOOLBAR: ToolbarEntry[] = [
   t("select", "Select", "V", Cursor, "tool.select", true),
-  t("crop", "Crop", "C", Crop, "tool.crop"),
-  t("resize", "Resize", "S", ArrowsOut, "tool.resize"),
-  t("rotate", "Rotate", "L · Shift+L", ArrowClockwise, "tool.rotate"),
+  t("crop", "Crop", "C", Crop, "tool.crop", true),
+  t("resize", "Resize", "S", ArrowsOut, "tool.resize", true),
+  t("rotate", "Rotate", "L · Shift+L", ArrowClockwise, "tool.rotate", true),
   { kind: "divider" },
   t("rect", "Rectangle", "R", Rectangle, "tool.rect"),
   t("ellipse", "Ellipse", "O", Circle, "tool.ellipse"),
@@ -96,7 +96,7 @@ export const HISTORY: ToolDef[] = [
     shortcut: "Ctrl+Shift+Z",
     icon: ArrowUUpRight,
     enabled: false,
-    binding: "edit.undo",
+    binding: "edit.redo",
   },
 ];
 
