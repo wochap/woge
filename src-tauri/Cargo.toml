@@ -3,6 +3,7 @@ name = "woge"
 version = "0.1.0"
 edition = "2021"
 description = "Wayland screenshot and image editor"
+license = "MIT"
 
 [lib]
 name = "woge_lib"
