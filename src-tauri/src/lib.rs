@@ -27,6 +27,10 @@ fn fail(msg: impl std::fmt::Display) -> i32 {
 pub fn run() -> i32 {
     // clap prints usage and exits 2 on bad arguments.
     let cli = Cli::parse();
+    if let Some(shell) = cli.completions {
+        print!("{}", shell.script());
+        return EXIT_OK;
+    }
 
     if let Err(e) = lifecycle::validate_wayland() {
         return fail(e);

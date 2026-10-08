@@ -1,0 +1,31 @@
+#compdef woge
+
+_woge() {
+  local -a args
+  args=(
+    '(-h --help)'{-h,--help}'[print help]'
+    '(-V --version)'{-V,--version}'[print version]'
+    '(1)--clipboard[load the image currently on the Wayland clipboard]'
+    '--theme=[colour theme (overrides config)]:theme:((auto\:"follow the system" mocha\:"dark Catppuccin" latte\:"light Catppuccin"))'
+    '(-o --output)'{-o+,--output=}'[write Save to PATH instead of the source file]:path:_files'
+    '--format=[output format]:format:((png\:"PNG (lossless)" jpeg\:"JPEG" webp\:"WebP"))'
+    '--on-save=[what a successful Save does next]:action:((exit\:"exit after saving" stay\:"keep the editor open"))'
+    '--copy[also copy the result to the clipboard after each save]'
+    '(-v --verbose)'{-v,--verbose}'[verbose logging (debug level)]'
+    '--completions=[print a shell completion script]:shell:((zsh\:"zsh completion script"))'
+    '(--clipboard)1:image:_woge_input'
+  )
+  _arguments -s -S $args
+}
+
+_woge_input() {
+  _alternative \
+    'files:image file:_files -g "*.(#i)(png|jpg|jpeg|webp)(-.)"' \
+    'stdin:stdin:((-\:"read image bytes from stdin"))'
+}
+
+if [[ $zsh_eval_context[-1] == loadautofunc ]]; then
+  _woge "$@"
+else
+  compdef _woge woge
+fi

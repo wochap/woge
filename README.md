@@ -23,6 +23,7 @@ woge shot.png -o out.png # Save writes out.png instead of shot.png
 grim - | woge - -o /tmp/a.png --on-save exit   # prints /tmp/a.png after saving
 woge shot.png -o out.jpg --format webp         # writes out.webp
 woge shot.png --on-save stay --copy            # keep editing, copy after each save
+woge --completions zsh   # print the zsh completion script
 ```
 
 Output flags:
@@ -37,6 +38,14 @@ stdout carries only saved paths, one absolute path per line. Overwriting a file 
 Exit codes: `0` saved with `on_save = exit` or closed with nothing to lose, `1` a scripted run (`-o` or stdin input) closed without saving, `2` startup error.
 
 Copy (`Ctrl C`) writes a PNG to `~/.cache/woge/clip-*.png` and runs `shotclip --paste-once {path}`. When `shotclip` is not on `PATH` it falls back to `wl-copy --type image/png` with the PNG on stdin. Note that `--paste-once` clears after the first paste; set `[copy] command` to change that.
+
+### Shell completions
+
+zsh completions cover every flag, enum values, and image files (png, jpg, jpeg, webp) or `-` for `INPUT`.
+
+- Nix: the package installs `share/zsh/site-functions/_woge` automatically. Opt out with `woge.override { withZshCompletion = false; }`.
+- fpath: `woge --completions zsh > ~/.zfunc/_woge`, with `fpath=(~/.zfunc $fpath)` before `compinit`.
+- eval (after `compinit`): `eval "$(woge --completions zsh)"`, or `zsh-defer eval "$(woge --completions zsh)"`.
 
 ### Config
 

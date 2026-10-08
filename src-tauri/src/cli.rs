@@ -49,6 +49,22 @@ pub enum OnSave {
     Stay,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum Shell {
+    Zsh,
+}
+
+/// Hand-written zsh completion script, printed by `--completions zsh`.
+pub const COMPLETION_ZSH: &str = include_str!("../completions/_woge");
+
+impl Shell {
+    pub fn script(self) -> &'static str {
+        match self {
+            Self::Zsh => COMPLETION_ZSH,
+        }
+    }
+}
+
 #[derive(Debug, Parser)]
 #[command(name = "woge", version, about = "Wayland screenshot and image editor")]
 pub struct Cli {
@@ -83,6 +99,10 @@ pub struct Cli {
     /// Verbose logging (debug level)
     #[arg(short, long)]
     pub verbose: bool,
+
+    /// Print a shell completion script to stdout and exit
+    #[arg(long, value_enum, value_name = "SHELL")]
+    pub completions: Option<Shell>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -216,6 +236,44 @@ mod tests {
         assert!(parse(&["shot.png", "-o", "shot.png"]).unwrap().scripted());
         assert!(parse(&["-"]).unwrap().scripted());
         assert!(!parse(&["--clipboard"]).unwrap().scripted());
+    }
+
+    #[test]
+    fn completions_flag() {
+        assert_eq!(parse(&["--completions", "zsh"]).unwrap().completions, Some(Shell::Zsh));
+        let e = parse(&["--completions", "fish"]).unwrap_err();
+        assert_eq!(e.kind(), clap::error::ErrorKind::InvalidValue);
+        assert_eq!(e.exit_code(), 2);
+    }
+
+    #[test]
+    fn zsh_script_shape() {
+        assert!(COMPLETION_ZSH.starts_with("#compdef woge"));
+        assert!(COMPLETION_ZSH.contains("compdef _woge woge"));
+    }
+
+    /// Every clap flag must appear in the zsh script.
+    #[test]
+    fn zsh_script_covers_every_flag() {
+        use clap::CommandFactory;
+        let mut cmd = Cli::command();
+        cmd.build();
+        let mut missing = Vec::new();
+        for arg in cmd.get_arguments() {
+            if let Some(long) = arg.get_long() {
+                let flag = format!("--{long}");
+                if !COMPLETION_ZSH.contains(&flag) {
+                    missing.push(flag);
+                }
+            }
+            if let Some(short) = arg.get_short() {
+                let flag = format!("-{short}");
+                if !COMPLETION_ZSH.contains(&flag) {
+                    missing.push(flag);
+                }
+            }
+        }
+        assert!(missing.is_empty(), "flags missing from completions/_woge: {missing:?}");
     }
 
     #[test]

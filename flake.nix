@@ -10,44 +10,9 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
-      nativeTools = with pkgs; [ pkg-config wrapGAppsHook3 nodejs cargo-tauri.hook ];
       libs = with pkgs; [ webkitgtk_4_1 gtk3 glib librsvg dbus openssl libsoup_3 ];
-      runtimePath = pkgs.lib.makeBinPath [ pkgs.wl-clipboard pkgs.fontconfig ];
 
-      woge = pkgs.rustPlatform.buildRustPackage {
-        pname = "woge";
-        version = "0.1.0";
-        src = ./.;
-
-        cargoRoot = "src-tauri";
-        buildAndTestSubdir = "src-tauri";
-        cargoLock.lockFile = ./src-tauri/Cargo.lock;
-
-        npmDeps = pkgs.fetchNpmDeps {
-          name = "woge-npm-deps";
-          src = ./.;
-          hash = "sha256-Jm9CuP78SriWAqAUX6q5RrD9mVrE9+S3WuXVw1lsNYM=";
-        };
-
-        nativeBuildInputs = nativeTools ++ [ pkgs.npmHooks.npmConfigHook ];
-        buildInputs = libs;
-
-        # Tests need a Wayland socket and run via `npm run test:rust` in the dev shell.
-        doCheck = false;
-
-        preFixup = ''
-          gappsWrapperArgs+=(
-            --set GDK_BACKEND wayland
-            --prefix PATH : ${runtimePath}
-          )
-        '';
-
-        meta = {
-          description = "Wayland screenshot and image editor";
-          mainProgram = "woge";
-          platforms = [ system ];
-        };
-      };
+      woge = pkgs.callPackage ./nix/package.nix { };
     in
     {
       packages.${system}.default = woge;
