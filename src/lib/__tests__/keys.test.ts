@@ -21,6 +21,10 @@ describe("keymap", () => {
     expect(matchBinding("ctrl+v", "v")?.id).toBe("file.paste");
     expect(matchBinding("shift+1", "!")?.id).toBe("view.fit");
     expect(matchBinding("shift+?", "?")?.id).toBe("app.shortcuts");
+    expect(matchBinding("ctrl+c", "c")?.id).toBe("file.copy");
+    expect(matchBinding("ctrl+s", "s")?.id).toBe("file.save");
+    expect(matchBinding("ctrl+shift+s", "S")?.id).toBe("file.saveAs");
+    expect(matchBinding("ctrl+q", "q")?.id).toBe("app.quit");
   });
 
   it("dispatches and prevents default", () => {

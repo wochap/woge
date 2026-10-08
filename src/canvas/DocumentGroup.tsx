@@ -7,7 +7,7 @@ interface Props {
 }
 
 /** Placement of the rotated base bitmap inside rotated-image space. */
-function imagePlacement(doc: Document) {
+export function imagePlacement(doc: Document) {
   const { width: w, height: h } = doc.source;
   switch (doc.rotation) {
     case 90:
@@ -21,30 +21,38 @@ function imagePlacement(doc: Document) {
   }
 }
 
+/** Document transform: base → rotate → crop → scale to `size`. Objects share it. */
+export function groupAttrs(doc: Document) {
+  const { crop, size } = doc;
+  return {
+    offsetX: crop.x,
+    offsetY: crop.y,
+    scaleX: size.w / crop.w,
+    scaleY: size.h / crop.h,
+    clipX: crop.x,
+    clipY: crop.y,
+    clipWidth: crop.w,
+    clipHeight: crop.h,
+  };
+}
+
+export function imageAttrs(doc: Document) {
+  return {
+    width: doc.source.width,
+    height: doc.source.height,
+    rotation: doc.rotation,
+    ...imagePlacement(doc),
+  };
+}
+
 /**
- * Document transform: base → rotate → crop → scale to `size`. Objects share it.
- * Export reuses this group on an offscreen stage without the viewport transform.
+ * The document as Konva nodes. Export (`lib/export.ts`) builds the same nodes from
+ * `groupAttrs`/`imageAttrs` on an offscreen stage without the viewport transform.
  */
 export function DocumentGroup({ doc, bitmap }: Props) {
-  const { crop, size } = doc;
   return (
-    <Group
-      offsetX={crop.x}
-      offsetY={crop.y}
-      scaleX={size.w / crop.w}
-      scaleY={size.h / crop.h}
-      clipX={crop.x}
-      clipY={crop.y}
-      clipWidth={crop.w}
-      clipHeight={crop.h}
-    >
-      <KonvaImage
-        image={bitmap}
-        width={doc.source.width}
-        height={doc.source.height}
-        rotation={doc.rotation}
-        {...imagePlacement(doc)}
-      />
+    <Group {...groupAttrs(doc)}>
+      <KonvaImage image={bitmap} {...imageAttrs(doc)} />
       <Group name="objects" />
     </Group>
   );

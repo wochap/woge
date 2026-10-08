@@ -4,7 +4,29 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
-use crate::cli::{Cli, Theme};
+use crate::cli::{Cli, Format, OnSave, Theme};
+
+pub const DEFAULT_JPEG_QUALITY: u8 = 92;
+pub const DEFAULT_WEBP_QUALITY: u8 = 90;
+
+#[derive(Debug, Default, Clone, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct CopyConfig {
+    pub command: Option<Vec<String>>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct Hooks {
+    #[serde(default)]
+    pub on_load: Vec<String>,
+    #[serde(default)]
+    pub on_save: Vec<String>,
+    #[serde(default)]
+    pub on_copy: Vec<String>,
+    #[serde(default)]
+    pub on_exit: Vec<String>,
+}
 
 #[derive(Debug, Default, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -12,6 +34,15 @@ pub struct FileConfig {
     pub theme: Option<Theme>,
     pub status_line: Option<bool>,
     pub checkerboard: Option<bool>,
+    pub format: Option<Format>,
+    pub on_save: Option<OnSave>,
+    pub copy_on_save: Option<bool>,
+    pub jpeg_quality: Option<i64>,
+    pub webp_quality: Option<i64>,
+    #[serde(default)]
+    pub copy: CopyConfig,
+    #[serde(default)]
+    pub hooks: Hooks,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -20,6 +51,15 @@ pub struct Effective {
     pub status_line: bool,
     pub checkerboard: bool,
     pub verbose: bool,
+    /// Explicit format (flag > `-o` extension > config); `None` defers to the source.
+    pub format: Option<Format>,
+    pub on_save: OnSave,
+    pub copy_on_save: bool,
+    pub jpeg_quality: u8,
+    pub webp_quality: u8,
+    /// `None` means the default shotclip command with the wl-copy fallback.
+    pub copy_command: Option<Vec<String>>,
+    pub hooks: Hooks,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -43,20 +83,103 @@ pub fn load(path: &Path) -> Result<FileConfig, ConfigError> {
     }
 }
 
+fn is_argv(v: &toml::Value) -> bool {
+    v.as_array().is_some_and(|a| a.iter().all(toml::Value::is_str))
+}
+
+/// Shape checks serde would report without the key path.
+fn check_shapes(value: &toml::Value) -> Result<(), String> {
+    for table in ["hooks", "copy"] {
+        let Some(t) = value.get(table).and_then(toml::Value::as_table) else { continue };
+        for (key, v) in t {
+            if !is_argv(v) {
+                return Err(format!("`{table}.{key}` must be an array of strings"));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn check_quality(key: &str, q: Option<i64>) -> Result<(), String> {
+    match q {
+        Some(q) if !(1..=100).contains(&q) => Err(format!("`{key}` must be between 1 and 100, got {q}")),
+        _ => Ok(()),
+    }
+}
+
 pub fn parse(path: &Path, text: &str) -> Result<FileConfig, ConfigError> {
-    toml::from_str(text).map_err(|e| ConfigError::Parse {
-        path: path.to_owned(),
-        message: e.message().trim().to_owned(),
-    })
+    let err = |message: String| ConfigError::Parse { path: path.to_owned(), message };
+    let value: toml::Value = toml::from_str(text).map_err(|e: toml::de::Error| err(e.message().trim().to_owned()))?;
+    check_shapes(&value).map_err(err)?;
+    let file: FileConfig = toml::from_str(text).map_err(|e: toml::de::Error| err(e.message().trim().to_owned()))?;
+    check_quality("jpeg_quality", file.jpeg_quality).map_err(err)?;
+    check_quality("webp_quality", file.webp_quality).map_err(err)?;
+    Ok(file)
+}
+
+/// Flag > `-o` extension > config.
+pub fn explicit_format(flag: Option<Format>, output_ext: Option<&str>, config: Option<Format>) -> Option<Format> {
+    flag.or_else(|| output_ext.and_then(Format::from_ext)).or(config)
+}
+
+/// Full precedence: flag > `-o` extension > config > source extension > PNG.
+pub fn resolve_format(
+    flag: Option<Format>,
+    output_ext: Option<&str>,
+    config: Option<Format>,
+    source_ext: Option<&str>,
+) -> Format {
+    explicit_format(flag, output_ext, config)
+        .or_else(|| source_ext.and_then(Format::from_ext))
+        .unwrap_or(Format::Png)
+}
+
+/// Keep a matching extension, replace another image extension, append otherwise.
+pub fn rewrite_extension(path: &Path, format: Format) -> PathBuf {
+    match path.extension().and_then(|e| e.to_str()) {
+        Some(ext) if Format::from_ext(ext) == Some(format) => path.to_owned(),
+        Some(ext) if Format::from_ext(ext).is_some() => path.with_extension(format.ext()),
+        _ => {
+            let mut s = path.as_os_str().to_owned();
+            s.push(".");
+            s.push(format.ext());
+            PathBuf::from(s)
+        }
+    }
+}
+
+fn ext_of(path: &Path) -> Option<&str> {
+    path.extension().and_then(|e| e.to_str())
 }
 
 pub fn resolve(cli: &Cli, file: &FileConfig) -> Effective {
+    let output_ext = cli.output.as_deref().and_then(ext_of);
     Effective {
         theme: cli.theme.or(file.theme).unwrap_or_default(),
         status_line: file.status_line.unwrap_or(true),
         checkerboard: file.checkerboard.unwrap_or(false),
         verbose: cli.verbose,
+        format: explicit_format(cli.format, output_ext, file.format),
+        on_save: cli.on_save.or(file.on_save).unwrap_or_default(),
+        copy_on_save: cli.copy || file.copy_on_save.unwrap_or(false),
+        jpeg_quality: file.jpeg_quality.map_or(DEFAULT_JPEG_QUALITY, |q| q as u8),
+        webp_quality: file.webp_quality.map_or(DEFAULT_WEBP_QUALITY, |q| q as u8),
+        copy_command: file.copy.command.clone().filter(|c| !c.is_empty()),
+        hooks: file.hooks.clone(),
     }
+}
+
+/// The `-o` path, absolute, with the extension rewritten to the resolved format.
+pub fn output_path(cli: &Cli, file: &FileConfig) -> Option<PathBuf> {
+    let out = cli.output.as_deref()?;
+    let source_ext = cli.input.as_deref().and_then(ext_of);
+    let format = resolve_format(cli.format, ext_of(out), file.format, source_ext);
+    let out = rewrite_extension(out, format);
+    Some(if out.is_absolute() {
+        out
+    } else {
+        std::env::current_dir().map(|d| d.join(&out)).unwrap_or(out)
+    })
 }
 
 #[cfg(test)]
@@ -109,5 +232,81 @@ mod tests {
     fn flag_beats_file() {
         let f = parse(Path::new("c"), "theme = \"latte\"").unwrap();
         assert_eq!(resolve(&cli(&["--theme", "mocha"]), &f).theme, Theme::Mocha);
+    }
+
+    #[test]
+    fn output_defaults() {
+        let e = resolve(&cli(&[]), &FileConfig::default());
+        assert_eq!(e.format, None);
+        assert_eq!(e.on_save, OnSave::Exit);
+        assert!(!e.copy_on_save);
+        assert_eq!((e.jpeg_quality, e.webp_quality), (92, 90));
+        assert_eq!(e.copy_command, None);
+        assert!(e.hooks.on_save.is_empty());
+    }
+
+    #[test]
+    fn output_keys() {
+        let f = parse(
+            Path::new("c"),
+            "format = \"jpeg\"\non_save = \"stay\"\ncopy_on_save = true\njpeg_quality = 80\n\
+             [copy]\ncommand = [\"wl-copy\"]\n[hooks]\non_save = [\"notify-send\", \"woge\", \"saved {output}\"]\n",
+        )
+        .unwrap();
+        let e = resolve(&cli(&[]), &f);
+        assert_eq!(e.format, Some(Format::Jpeg));
+        assert_eq!(e.on_save, OnSave::Stay);
+        assert!(e.copy_on_save);
+        assert_eq!(e.jpeg_quality, 80);
+        assert_eq!(e.copy_command, Some(vec!["wl-copy".to_owned()]));
+        assert_eq!(e.hooks.on_save.len(), 3);
+        assert_eq!(resolve(&cli(&["--on-save", "exit"]), &f).on_save, OnSave::Exit);
+    }
+
+    #[test]
+    fn quality_bounds() {
+        let msg = parse(Path::new("c"), "jpeg_quality = 150").unwrap_err().to_string();
+        assert!(msg.contains("jpeg_quality"), "{msg}");
+        let msg = parse(Path::new("c"), "webp_quality = 0").unwrap_err().to_string();
+        assert!(msg.contains("webp_quality"), "{msg}");
+        assert!(parse(Path::new("c"), "jpeg_quality = 1\nwebp_quality = 100").is_ok());
+    }
+
+    #[test]
+    fn non_array_hook_names_key() {
+        let msg = parse(Path::new("c"), "[hooks]\non_save = \"notify-send\"").unwrap_err().to_string();
+        assert!(msg.contains("hooks.on_save"), "{msg}");
+        let msg = parse(Path::new("c"), "[hooks]\non_exit = [1, 2]").unwrap_err().to_string();
+        assert!(msg.contains("hooks.on_exit"), "{msg}");
+        let msg = parse(Path::new("c"), "[hooks]\non_lunch = []").unwrap_err().to_string();
+        assert!(msg.contains("on_lunch"), "{msg}");
+    }
+
+    #[test]
+    fn format_precedence() {
+        use Format::*;
+        assert_eq!(resolve_format(Some(Png), Some("jpg"), Some(Webp), Some("webp")), Png);
+        assert_eq!(resolve_format(None, Some("jpg"), Some(Webp), Some("png")), Jpeg);
+        assert_eq!(resolve_format(None, Some("bmp"), Some(Webp), Some("png")), Webp);
+        assert_eq!(resolve_format(None, None, None, Some("JPG")), Jpeg);
+        assert_eq!(resolve_format(None, None, None, Some("gif")), Png);
+        assert_eq!(resolve_format(None, None, None, None), Png);
+    }
+
+    #[test]
+    fn extension_rewrite() {
+        assert_eq!(rewrite_extension(Path::new("out.jpg"), Format::Webp), PathBuf::from("out.webp"));
+        assert_eq!(rewrite_extension(Path::new("out.jpeg"), Format::Jpeg), PathBuf::from("out.jpeg"));
+        assert_eq!(rewrite_extension(Path::new("out.bmp"), Format::Png), PathBuf::from("out.bmp.png"));
+        assert_eq!(rewrite_extension(Path::new("out"), Format::Png), PathBuf::from("out.png"));
+    }
+
+    #[test]
+    fn output_path_rewritten_and_absolute() {
+        let p = output_path(&cli(&["shot.png", "-o", "/tmp/out.jpg", "--format", "png"]), &FileConfig::default());
+        assert_eq!(p, Some(PathBuf::from("/tmp/out.png")));
+        let p = output_path(&cli(&["shot.png", "-o", "rel.png"]), &FileConfig::default()).unwrap();
+        assert!(p.is_absolute());
+        assert_eq!(output_path(&cli(&["shot.png"]), &FileConfig::default()), None);
     }
 }

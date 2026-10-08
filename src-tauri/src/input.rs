@@ -65,7 +65,7 @@ pub fn cache_dir() -> PathBuf {
         .join("woge")
 }
 
-fn unique_name() -> String {
+pub fn unique_name() -> String {
     static N: AtomicU64 = AtomicU64::new(0);
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

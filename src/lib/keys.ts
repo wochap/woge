@@ -57,9 +57,9 @@ export const KEYMAP: KeyBinding[] = [
 
   b("file.open", "Open", "file", "Ctrl O", ["ctrl+o"], true),
   b("file.paste", "Paste image", "file", "Ctrl V", ["ctrl+v"], true),
-  b("file.copy", "Copy result", "file", "Ctrl C", ["ctrl+c"]),
-  b("file.save", "Save", "file", "Ctrl S", ["ctrl+s"]),
-  b("file.saveAs", "Save as", "file", "Ctrl ⇧S", ["ctrl+shift+s"]),
+  b("file.copy", "Copy result", "file", "Ctrl C", ["ctrl+c"], true),
+  b("file.save", "Save", "file", "Ctrl S", ["ctrl+s"], true),
+  b("file.saveAs", "Save as", "file", "Ctrl ⇧S", ["ctrl+shift+s"], true),
   b("edit.undo", "Undo / Redo", "file", "Ctrl Z · ⇧Z", ["ctrl+z", "ctrl+shift+z"], true),
   b("edit.applyCancel", "Apply / Cancel", "file", "Enter · Esc", ["enter", "escape"], true),
   b(

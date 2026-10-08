@@ -10,6 +10,7 @@ import {
 } from "./lib/backend";
 import { DECODE_ERROR, createLoadGuard, decodeUrl } from "./lib/decode";
 import { useEditor } from "./store/editor";
+import { onLoaded } from "./store/output";
 
 function message(err: unknown): string {
   if (typeof err === "string") return err;
@@ -52,6 +53,7 @@ export function useInputs(onLaunch: (opts: LaunchOptions) => void) {
           name: loaded.name,
         });
         setLoading(null);
+        onLoaded();
       } catch (err) {
         if (!guard.isCurrent(id)) return;
         setLoading(null);

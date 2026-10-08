@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Stage } from "./canvas/Stage";
 import { EmptyState } from "./chrome/EmptyState";
 import { OptionsStrip } from "./chrome/OptionsStrip";
@@ -7,11 +8,22 @@ import { StatusLine } from "./chrome/StatusLine";
 import { Toast } from "./chrome/Toast";
 import { Toolbar } from "./chrome/Toolbar";
 import { TopBar } from "./chrome/TopBar";
-import { exitApplication, type LaunchOptions } from "./lib/backend";
+import { CloseDialog } from "./chrome/CloseDialog";
+import type { LaunchOptions } from "./lib/backend";
 import { useCompact } from "./lib/compact";
 import { useKeymap, type KeyHandlers } from "./lib/keys";
 import { useTheme, type ThemeSetting } from "./lib/theme";
 import { useEditor } from "./store/editor";
+import {
+  copyResult,
+  discardAndClose,
+  requestClose,
+  save,
+  saveAndClose,
+  saveAs,
+  useDirty,
+  useOutput,
+} from "./store/output";
 import { useInputs } from "./useInputs";
 import { canRedo, canUndo } from "./store/history";
 import { visibleSize } from "./model/document";
@@ -22,8 +34,9 @@ import { ResizeStrip } from "./tools/resize/ResizeStrip";
 import { formatCropStatus } from "./tools/crop/math";
 import { originalSize, percentOf } from "./tools/resize/math";
 
-function quit() {
-  exitApplication(0).catch(() => window.close());
+/** Annotation selection lands with the annotation tools; until then Ctrl+C always copies. */
+function hasSelection(): boolean {
+  return false;
 }
 
 export default function App() {
@@ -37,8 +50,34 @@ export default function App() {
     setThemeSetting(opts.theme);
     useEditor.getState().setStatusLine(opts.statusLine);
     useEditor.getState().setCheckerboard(opts.checkerboard);
+    useOutput.getState().configure(opts);
   }, []);
   const { dropActive, openDialog, openClipboard } = useInputs(onLaunch);
+
+  const dirty = useDirty();
+  const closeDialog = useOutput((o) => o.closeDialog);
+  const cancelClose = useCallback(() => useOutput.getState().setCloseDialog(false), []);
+
+  // The window manager's close goes through the same confirmation.
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    try {
+      getCurrentWindow()
+        .onCloseRequested((e) => {
+          e.preventDefault();
+          requestClose();
+        })
+        .then((fn) => (cancelled ? fn() : (unlisten = fn)))
+        .catch(() => {});
+    } catch {
+      /* Not running inside Tauri. */
+    }
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }, []);
 
   const inMode = s.mode !== "none";
   const selectTool = (tool: ToolId, e: { shiftKey: boolean }) => {
@@ -86,10 +125,19 @@ export default function App() {
     "file.open": openDialog,
     "file.paste": openClipboard,
     "app.shortcuts": () => setOverlayOpen(true),
-    "app.quit": quit,
+    "file.copy": () => {
+      if (s.document && !inMode && !hasSelection()) copyResult();
+    },
+    "file.save": () => {
+      if (s.document && !inMode) save();
+    },
+    "file.saveAs": () => {
+      if (s.document && !inMode) saveAs();
+    },
+    "app.quit": requestClose,
     "overlay.close": () => setOverlayOpen(false),
   };
-  useKeymap(handlers, { overlayOpen });
+  useKeymap(handlers, { overlayOpen: overlayOpen || closeDialog });
 
   const doc = s.document;
   const loadingName = s.loading?.name ?? null;
@@ -118,13 +166,17 @@ export default function App() {
         compactNarrow={compact.narrow}
         compactShort={compact.short}
         checkerboard={s.checkerboard}
+        dirty={dirty}
         {...history}
         onFit={s.fit}
         onActual={s.actualSize}
         onZoomIn={() => s.zoomStep(1)}
         onZoomOut={() => s.zoomStep(-1)}
         onToggleCheckerboard={() => s.setCheckerboard(!s.checkerboard)}
-        onClose={quit}
+        onClose={requestClose}
+        onCopy={copyResult}
+        onSave={() => save()}
+        onSaveAs={() => saveAs()}
       />
       <Toolbar
         activeTool={s.activeTool}
@@ -144,6 +196,9 @@ export default function App() {
       {s.statusLine && <StatusLine pointer={s.pointer} detail={statusDetail} />}
       <Toast toast={s.toast} onDismiss={s.dismissToast} />
       {overlayOpen && <ShortcutOverlay onClose={() => setOverlayOpen(false)} />}
+      {closeDialog && (
+        <CloseDialog onDiscard={discardAndClose} onCancel={cancelClose} onSave={saveAndClose} />
+      )}
     </div>
   );
 }

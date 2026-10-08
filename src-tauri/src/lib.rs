@@ -2,10 +2,13 @@
 
 mod app;
 mod cli;
+mod clipboard;
 mod config;
+mod hooks;
 mod input;
 mod lifecycle;
 mod logging;
+mod output;
 
 use clap::Parser;
 use tauri::Manager;
@@ -68,16 +71,31 @@ pub fn run() -> i32 {
         theme: eff.theme,
         status_line: eff.status_line,
         checkerboard: eff.checkerboard,
+        output_path: config::output_path(&cli, &file).map(|p| p.to_string_lossy().into_owned()),
+        format: eff.format,
+        on_save: eff.on_save,
+        copy_on_save: eff.copy_on_save,
+        jpeg_quality: eff.jpeg_quality,
+        webp_quality: eff.webp_quality,
+        scripted: cli.scripted(),
     };
+
+    let backups = output::Backups::new(output::Backups::default_dir());
+    backups.purge_older_than(std::time::Duration::from_secs(24 * 3600));
 
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .manage(app::AppState::new(launch, staged))
+        .manage(app::AppState::new(launch, staged, backups, eff.copy_command.clone(), eff.hooks.clone()))
         .invoke_handler(tauri::generate_handler![
             app::take_launch_options,
             app::load_input,
             app::load_clipboard,
             app::exit_application,
+            app::write_output,
+            app::restore_backup,
+            app::copy_image,
+            app::run_hook,
+            app::print_saved_path,
         ])
         .build(tauri::generate_context!());
     let app = match app {
@@ -87,7 +105,9 @@ pub fn run() -> i32 {
 
     let code = app.run_return(|handle, event| {
         if let tauri::RunEvent::Exit = event {
-            handle.state::<app::AppState>().cleanup();
+            let state = handle.state::<app::AppState>();
+            state.run_on_exit(Default::default(), EXIT_OK);
+            state.cleanup();
         }
     });
     tracing::info!(code, "exiting");

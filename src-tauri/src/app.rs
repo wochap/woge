@@ -1,23 +1,55 @@
 //! Tauri commands and managed state.
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
 use serde::Serialize;
+use tauri::ipc::{InvokeBody, Request};
 use tauri::{AppHandle, Manager, State};
 
-use crate::cli::LaunchOptions;
+use crate::cli::{Format, LaunchOptions};
+use crate::clipboard;
+use crate::config::Hooks;
+use crate::hooks::{self, HookContext, HookKind};
 use crate::input::{self, InputSource};
+use crate::output::{self, Backups, WriteReport};
 
 pub struct AppState {
     launch: Mutex<Option<LaunchOptions>>,
     /// Staged stdin/clipboard file backing the current document, deleted on replace and exit.
     staged: Mutex<Option<PathBuf>>,
+    backups: Backups,
+    copy_command: Option<Vec<String>>,
+    hooks: Hooks,
+    on_exit_ran: AtomicBool,
 }
 
 impl AppState {
-    pub fn new(launch: LaunchOptions, staged: Option<PathBuf>) -> Self {
-        Self { launch: Mutex::new(Some(launch)), staged: Mutex::new(staged) }
+    pub fn new(
+        launch: LaunchOptions,
+        staged: Option<PathBuf>,
+        backups: Backups,
+        copy_command: Option<Vec<String>>,
+        hooks: Hooks,
+    ) -> Self {
+        Self {
+            launch: Mutex::new(Some(launch)),
+            staged: Mutex::new(staged),
+            backups,
+            copy_command,
+            hooks,
+            on_exit_ran: AtomicBool::new(false),
+        }
+    }
+
+    /// Run `on_exit` once, waiting at most two seconds.
+    pub fn run_on_exit(&self, mut ctx: HookContext, code: i32) {
+        if self.on_exit_ran.swap(true, Ordering::SeqCst) {
+            return;
+        }
+        ctx.exit_code = Some(code);
+        hooks::run_bounded(HookKind::OnExit, &self.hooks, &ctx, hooks::ON_EXIT_TIMEOUT);
     }
 
     /// Replace the tracked staged file, deleting the previous one unless it is `keep`.
@@ -33,6 +65,8 @@ impl AppState {
 
     pub fn cleanup(&self) {
         self.replace_staged(None, None);
+        self.backups.cleanup();
+        clipboard::remove_clips(&input::cache_dir());
     }
 }
 
@@ -123,10 +157,86 @@ pub async fn load_clipboard(app: AppHandle, state: State<'_, AppState>) -> Resul
 }
 
 #[tauri::command]
-pub fn exit_application(app: AppHandle, state: State<'_, AppState>, code: i32) {
+pub fn exit_application(app: AppHandle, state: State<'_, AppState>, code: i32, ctx: Option<HookContext>) {
     tracing::info!(code, "exit requested");
+    state.run_on_exit(ctx.unwrap_or_default(), code);
     state.cleanup();
     app.exit(code);
+}
+
+/// Inverse of `encodeURIComponent`, for non-ASCII paths carried in headers.
+pub fn percent_decode(s: &str) -> String {
+    let b = s.as_bytes();
+    let mut out = Vec::with_capacity(b.len());
+    let mut i = 0;
+    while i < b.len() {
+        if b[i] == b'%' && i + 2 < b.len() {
+            if let Some(v) = std::str::from_utf8(&b[i + 1..i + 3]).ok().and_then(|h| u8::from_str_radix(h, 16).ok()) {
+                out.push(v);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(b[i]);
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+fn raw_body<'a>(request: &'a Request<'_>) -> Result<&'a [u8], String> {
+    match request.body() {
+        InvokeBody::Raw(bytes) => Ok(bytes),
+        InvokeBody::Json(_) => Err("expected binary body".into()),
+    }
+}
+
+fn header(request: &Request<'_>, name: &str) -> Result<String, String> {
+    request
+        .headers()
+        .get(name)
+        .and_then(|v| v.to_str().ok())
+        .map(percent_decode)
+        .ok_or_else(|| format!("missing header {name}"))
+}
+
+/// Body: encoded image bytes. Headers: `x-woge-path` (URI-encoded), `x-woge-format`.
+#[tauri::command]
+pub async fn write_output(state: State<'_, AppState>, request: Request<'_>) -> Result<WriteReport, String> {
+    let bytes = raw_body(&request)?;
+    let path = PathBuf::from(header(&request, "x-woge-path")?);
+    let format: Format = serde_json::from_value(serde_json::Value::String(header(&request, "x-woge-format")?))
+        .map_err(|e| e.to_string())?;
+    output::write_output(bytes, &path, format, &state.backups).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn restore_backup(state: State<'_, AppState>, path: String) -> Result<(), String> {
+    state.backups.restore(Path::new(&path)).map_err(|e| e.to_string())
+}
+
+/// Body: PNG bytes. Returns the staged clip path.
+#[tauri::command]
+pub async fn copy_image(state: State<'_, AppState>, request: Request<'_>) -> Result<String, String> {
+    let bytes = raw_body(&request)?;
+    let path = clipboard::copy_image(bytes, state.copy_command.as_deref()).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().into_owned())
+}
+
+#[tauri::command]
+pub fn run_hook(state: State<'_, AppState>, kind: HookKind, ctx: HookContext) {
+    if kind == HookKind::OnExit {
+        return; // only via exit_application
+    }
+    hooks::run(kind, &state.hooks, &ctx);
+}
+
+/// The stdout contract: one saved path per line, flushed.
+#[tauri::command]
+pub fn print_saved_path(path: String) {
+    use std::io::Write;
+    let mut out = std::io::stdout().lock();
+    let _ = writeln!(out, "{path}");
+    let _ = out.flush();
 }
 
 #[cfg(test)]
@@ -136,6 +246,13 @@ mod tests {
     #[test]
     fn asset_url_encodes_like_convert_file_src() {
         assert_eq!(asset_url(Path::new("/tmp/a b/shot(1).png")), "asset://localhost/%2Ftmp%2Fa%20b%2Fshot(1).png");
+    }
+
+    #[test]
+    fn percent_decode_roundtrip() {
+        assert_eq!(percent_decode("%2Fhome%2Fu%2FMy%20Shots%2F%C3%A9.png"), "/home/u/My Shots/é.png");
+        assert_eq!(percent_decode("plain%"), "plain%");
+        assert_eq!(percent_decode("bad%zz"), "bad%zz");
     }
 
     #[test]

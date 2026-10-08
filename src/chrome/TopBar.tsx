@@ -14,6 +14,7 @@ export interface TopBarProps {
   compactNarrow: boolean;
   compactShort: boolean;
   checkerboard: boolean;
+  dirty?: boolean;
   canUndo?: boolean;
   canRedo?: boolean;
   onUndo?(): void;
@@ -24,6 +25,9 @@ export interface TopBarProps {
   onZoomOut(): void;
   onToggleCheckerboard(): void;
   onClose(): void;
+  onCopy?(): void;
+  onSave?(): void;
+  onSaveAs?(): void;
 }
 
 function startDrag(e: MouseEvent) {
@@ -50,6 +54,7 @@ export function TopBar(p: TopBarProps) {
         ) : (
           <span className="topbar-name empty">woge</span>
         )}
+        {p.dirty && !p.loading && <span className="dirty-dot" aria-label="Unsaved changes" />}
         {p.loading ? (
           <span className="skeleton" aria-label="Loading" />
         ) : (
@@ -120,23 +125,23 @@ export function TopBar(p: TopBarProps) {
           ))}
         {p.compactShort && <div className="vdiv" />}
         <Tooltip label="Copy" shortcut="Ctrl C">
-          <button className="btn btn-primary" disabled>
+          <button className="btn btn-primary" disabled={!hasDoc} onClick={p.onCopy}>
             <Copy size={15} />
             Copy
           </button>
         </Tooltip>
         <Tooltip label="Save" shortcut="Ctrl S">
-          <button className="btn btn-secondary" disabled>
+          <button className="btn btn-secondary" disabled={!hasDoc} onClick={p.onSave}>
             Save
           </button>
         </Tooltip>
         <Tooltip label="Save as" shortcut="Ctrl ⇧S">
           {p.compactNarrow ? (
-            <button className="btn btn-ghost btn-icon" disabled>
+            <button className="btn btn-ghost btn-icon" disabled={!hasDoc} onClick={p.onSaveAs}>
               <DownloadSimple size={15} />
             </button>
           ) : (
-            <button className="btn btn-ghost" disabled>
+            <button className="btn btn-ghost" disabled={!hasDoc} onClick={p.onSaveAs}>
               Save as…
             </button>
           )}

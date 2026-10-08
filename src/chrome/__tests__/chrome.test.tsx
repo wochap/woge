@@ -25,15 +25,31 @@ const base: TopBarProps = {
 };
 
 describe("TopBar", () => {
-  it("shows name, dimensions and zoom; output actions disabled", () => {
-    render(<TopBar {...base} />);
+  it("shows name, dimensions and zoom; output actions enabled with a document", () => {
+    const onCopy = vi.fn();
+    const onSave = vi.fn();
+    const onSaveAs = vi.fn();
+    render(<TopBar {...base} onCopy={onCopy} onSave={onSave} onSaveAs={onSaveAs} />);
     expect(screen.getByText("shot.png")).toBeInTheDocument();
     expect(screen.getByText("1920 × 1080")).toBeInTheDocument();
     expect(screen.getByText("50%")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save as" }));
+    expect(onCopy).toHaveBeenCalledOnce();
+    expect(onSave).toHaveBeenCalledOnce();
+    expect(onSaveAs).toHaveBeenCalledOnce();
+    expect(screen.getByText("Fit")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Unsaved changes")).toBeNull();
+  });
+
+  it("output actions disabled without a document; dirty dot", () => {
+    const { rerender } = render(<TopBar {...base} name={null} dims={null} scale={null} />);
     expect(screen.getByRole("button", { name: "Copy" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Save as" })).toBeDisabled();
-    expect(screen.getByText("Fit")).toBeInTheDocument();
+    rerender(<TopBar {...base} dirty />);
+    expect(screen.getByLabelText("Unsaved changes")).toBeInTheDocument();
   });
 
   it("shows a skeleton while loading and 'woge' when empty", () => {
