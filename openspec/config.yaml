@@ -1,20 +1,16 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Project: woge — a minimal, fast image annotate/crop/resize editor for Linux Wayland (Hyprland). Alpha software; breaking changes are fine.
+  Stack: Tauri 2 (Rust backend, clap CLI, serde, toml, directories, tracing), React 19 + TypeScript + Vite frontend, Tailwind 4, react-konva/konva for the canvas, zustand for state, @phosphor-icons/react, Inter Variable + JetBrains Mono via @fontsource-variable, vitest + @testing-library for frontend tests, cargo test for Rust. npm is the package manager (the Nix flake uses fetchNpmDeps).
+  Packaging: Nix flake with cargo-tauri.hook, modelled on ~/Sandboxes/sandbox/video-trimmer/flake.nix (same author, same conventions). Read that repo for Wayland enforcement, undecorated window, config precedence, atomic file writes and test patterns before implementing.
+  Design handoff: design/project/woge.dc.html (Claude Design). Board 1i holds the CSS custom property tokens for Catppuccin Mocha and Latte plus chrome geometry (--topbar-h 40px, --toolbar-w 44px, --strip-h 36px, --status-h 22px, handle sizes). Boards 1a-1o show every screen state. Match it visually; do not copy its DOM. Ignore design/project/_ds (unrelated leftover design system).
+  Conventions: shell commands prefixed with rtk (see RTK.md). Never add Co-Authored-By lines to commits. Keyboard, mouse and touchpad are all first-class. Figma navigation conventions: wheel pans, Ctrl+wheel or pinch zooms to cursor, Space+drag or middle-drag pans. Shift constrains or inverts the default aspect behaviour, Alt draws from center.
+  Document model (shared by all changes): immutable base ImageBitmap; rotation in 90° steps; crop rect; output size (non-destructive resize); annotation objects stored in image-space coordinates. Undo/redo is a snapshot stack of the JSON document (never of pixels). Viewport (pan/zoom) is not part of the document and never affects export.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Keep under 500 words
+  tasks:
+    - Each task must be completable in one focused session and verifiable by a test or by running the app
+    - Include test tasks alongside implementation tasks
