@@ -6,7 +6,7 @@ Command line surface, config.toml handling, settings precedence and handoff of r
 ## Requirements
 
 ### Requirement: Command line surface
-The binary SHALL accept `woge [INPUT] [--clipboard] [--theme auto|mocha|latte] [-v]`. `INPUT` is a file path or `-` for standard input. `INPUT` and `--clipboard` are mutually exclusive. Unknown flags SHALL fail with clap's usage error and exit status 2.
+The binary SHALL accept `woge [INPUT] [--clipboard] [--theme auto|mocha|latte] [-v] [--completions zsh]`. `INPUT` is a file path or `-` for standard input. `INPUT` and `--clipboard` are mutually exclusive. Unknown flags SHALL fail with clap's usage error and exit status 2. `--completions` SHALL be handled right after argument parsing, before the Wayland check, config load and logging setup (see `shell-completions`).
 
 #### Scenario: Open a file
 - **WHEN** `woge shot.png` runs
@@ -27,6 +27,10 @@ The binary SHALL accept `woge [INPUT] [--clipboard] [--theme auto|mocha|latte] [
 #### Scenario: No input
 - **WHEN** `woge` runs with no input
 - **THEN** the editor opens in the empty state
+
+#### Scenario: Completions skip startup
+- **WHEN** `woge --completions zsh` runs with no Wayland session and a malformed config file
+- **THEN** the script is printed, no Wayland or config error is reported, and the exit status is 0
 
 ### Requirement: Configuration file
 The application SHALL read `$XDG_CONFIG_HOME/woge/config.toml` (default `~/.config/woge/config.toml`). All keys are optional. Unknown keys, invalid values or malformed TOML SHALL abort startup with exit 2 and a message naming the file and the key. Keys defined by this change: `theme = "auto" | "mocha" | "latte"` (default `auto`), `status_line = bool` (default `true`), `checkerboard = bool` (default `false`).
@@ -88,7 +92,7 @@ The config file SHALL accept `format`, `on_save`, `copy_on_save`, `jpeg_quality`
 - **THEN** startup fails with exit 2 naming `jpeg_quality`
 
 ### Requirement: stdout and exit codes
-Only saved output paths SHALL be written to stdout, one per line. Exit SHALL be 0 after a save with `on_save = exit` or a normal close with nothing to lose, 1 when a scripted run closes without saving, 2 on startup errors.
+Only saved output paths SHALL be written to stdout, one per line. The exception is `--completions`, which writes the completion script instead and starts no editor. Exit SHALL be 0 after a save with `on_save = exit`, after a normal close with nothing to lose, or after printing completions; 1 when a scripted run closes without saving; 2 on startup errors.
 
 #### Scenario: Pipeline friendly
 - **WHEN** `grim - | woge - -o /tmp/a.png --on-save exit` runs and the user saves
