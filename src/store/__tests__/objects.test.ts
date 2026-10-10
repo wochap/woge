@@ -9,7 +9,9 @@ const rect = (x: number): Omit<RectObj, "id" | "z"> => ({
   h: 10,
   stroke: "red",
   strokeWidth: "M",
-  fill: false,
+  fill: null,
+  fillOpacity: 0.25,
+  strokeOpacity: 1,
 });
 
 function setup() {
@@ -86,6 +88,20 @@ describe("object store", () => {
     expect(objs()).toHaveLength(2);
     get().clearSelection();
     expect(get().copyObjects()).toBe(false);
+  });
+
+  it("duplicate, clipboard and rotation keep opacity fields", () => {
+    const get = setup();
+    const style = { strokeOpacity: 0.5, fill: "yellow", fillOpacity: 0.4 } as const;
+    const a = get().addObject({ ...rect(0), ...style })!;
+    const [dup] = get().duplicate([a]);
+    expect(objs().find((o) => o.id === dup)).toMatchObject(style);
+    get().select([a]);
+    get().copyObjects();
+    get().pasteObjects();
+    expect(objs().find((o) => o.id === get().selection[0])).toMatchObject(style);
+    get().rotate("cw");
+    expect(objs().every((o) => (o as RectObj).fillOpacity === 0.4)).toBe(true);
   });
 
   it("undo prunes stale selection", () => {

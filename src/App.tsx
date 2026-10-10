@@ -11,7 +11,7 @@ import { TopBar } from "./chrome/TopBar";
 import { CloseDialog } from "./chrome/CloseDialog";
 import type { LaunchOptions } from "./lib/backend";
 import { useCompact } from "./lib/compact";
-import { useKeymap, type KeyHandlers } from "./lib/keys";
+import { comboOf, useKeymap, type KeyHandlers } from "./lib/keys";
 import { useTheme, type ThemeSetting } from "./lib/theme";
 import { useEditor } from "./store/editor";
 import {
@@ -35,7 +35,9 @@ import { formatCropStatus } from "./tools/crop/math";
 import { originalSize, percentOf } from "./tools/resize/math";
 import { useSettings } from "./store/settings";
 import { useAnnotationStrip } from "./chrome/strips/AnnotationStrip";
-import { stripContext } from "./chrome/strips/apply";
+import { setColour, stepOpacity, stripContext } from "./chrome/strips/apply";
+import { SWATCHES } from "./model/palette";
+import type { ColorRole } from "./model/roles";
 import { stepTextSize } from "./chrome/strips/TextStrip";
 import {
   deleteSelection,
@@ -112,6 +114,22 @@ export default function App() {
   };
 
   const editingObjects = !!s.document && !inMode;
+  /** Strip context for colour keys: none in modes, without a document, or Select with nothing. */
+  const colourCtx = () => {
+    const d = useEditor.getState().document;
+    if (!d || inMode) return null;
+    const st = useEditor.getState();
+    return stripContext(st.activeTool, st.selection, d.objects);
+  };
+  const colourKey = (role: ColorRole) => (e: KeyboardEvent) => {
+    const ctx = colourCtx();
+    const digit = Number(comboOf(e).slice(-1));
+    if (ctx) setColour(ctx, role, SWATCHES[(digit + 9) % 10]);
+  };
+  const opacityKey = (role: ColorRole) => (e: KeyboardEvent) => {
+    const ctx = colourCtx();
+    if (ctx) stepOpacity(ctx, role, comboOf(e).endsWith("]") ? 1 : -1);
+  };
   const handlers: KeyHandlers = {
     "tool.select": (e) => selectTool("select", e),
     "tool.rect": (e) => selectTool("rect", e),
@@ -167,6 +185,10 @@ export default function App() {
       if (inMode) nudge(dx, dy);
       else if (editingObjects) nudgeSelection(dx, dy);
     },
+    "colour.primary": colourKey("primary"),
+    "colour.fill": colourKey("secondary"),
+    "opacity.primary": opacityKey("primary"),
+    "opacity.fill": opacityKey("secondary"),
     "view.fit": s.fit,
     "view.actual": s.actualSize,
     "view.zoomIn": () => s.zoomStep(1),
@@ -217,10 +239,7 @@ export default function App() {
   };
 
   return (
-    <div
-      className="editor"
-      style={{ gridTemplateRows: editorRows(s.statusLine) }}
-    >
+    <div className="editor" style={{ gridTemplateRows: editorRows(s.statusLine) }}>
       <TopBar
         name={loadingName ?? doc?.source.name ?? null}
         dims={dims && !s.loading ? { width: dims.w, height: dims.h } : null}

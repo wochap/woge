@@ -15,7 +15,9 @@ interface Base {
 export interface ShapeStyle {
   stroke: ColorKey;
   strokeWidth: StrokeWidth;
-  fill: boolean;
+  strokeOpacity: number;
+  fill: ColorKey | null;
+  fillOpacity: number;
 }
 
 export interface RectObj extends Base, ShapeStyle {
@@ -42,6 +44,7 @@ export interface ArrowObj extends Base {
   y2: number;
   heads: ArrowHeads;
   stroke: ColorKey;
+  strokeOpacity: number;
   strokeWidth: StrokeWidth;
 }
 
@@ -53,10 +56,12 @@ export interface TextObj extends Base {
   w?: number;
   text: string;
   color: ColorKey;
+  colorOpacity: number;
   font: string;
   size: number;
   bold: boolean;
-  plate: boolean;
+  plate: ColorKey | null;
+  plateOpacity: number;
 }
 
 export interface StrokeObj extends Base {
@@ -64,6 +69,7 @@ export interface StrokeObj extends Base {
   /** Flat `[x0, y0, x1, y1, …]` in rotated-image space. */
   points: number[];
   stroke: ColorKey;
+  strokeOpacity: number;
   strokeWidth: StrokeWidth;
   /** Brush only: render with curve tension. */
   smooth?: boolean;
@@ -94,7 +100,13 @@ export interface BadgeObj extends Base {
 }
 
 export type AnnotationObject =
-  RectObj | EllipseObj | ArrowObj | TextObj | StrokeObj | RedactObj | BadgeObj;
+  | RectObj
+  | EllipseObj
+  | ArrowObj
+  | TextObj
+  | StrokeObj
+  | RedactObj
+  | BadgeObj;
 export type ObjectType = AnnotationObject["type"];
 /** An object before it joins the document: id and z are assigned by the store. */
 export type NewObject = AnnotationObject extends infer T
@@ -120,15 +132,19 @@ export type ObjectPatch = Partial<
 export const STROKE_PX: Record<StrokeWidth, number> = { S: 2, M: 4, L: 8 };
 export const HIGHLIGHT_PX: Record<StrokeWidth, number> = { S: 12, M: 20, L: 32 };
 export const BADGE_PX: Record<BadgeSize, number> = { S: 22, M: 28, L: 36 };
-export const HIGHLIGHT_ALPHA = 0.5;
+export const DEFAULT_HIGHLIGHT_OPACITY = 0.5;
 export const PIXELATE_RANGE = { min: 4, max: 64, default: 12 } as const;
 export const BLUR_RANGE = { min: 2, max: 40, default: 8 } as const;
-export const FILL_ALPHA = 0.25;
+export const DEFAULT_FILL_OPACITY = 0.25;
 export const TEXT_SIZE_MIN = 8;
 export const TEXT_SIZE_MAX = 200;
 export const TEXT_LINE_HEIGHT = 1.2;
 export const PLATE_PAD = 4;
-export const PLATE_ALPHA = 0.7;
+export const DEFAULT_PLATE_OPACITY = 0.7;
+
+export function clampOpacity(n: number): number {
+  return Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 1;
+}
 
 export function resolveColor(key: ColorKey, flavour: Flavour): string {
   return PALETTE[flavour][key] ?? PALETTE[flavour].red;
@@ -366,13 +382,17 @@ export function reorder(
 
 /** Apply only fields meaningful for the object's type. */
 export function applyPatch(o: AnnotationObject, patch: ObjectPatch): AnnotationObject {
+  const BOX = ["x", "y", "w", "h", "z"];
   const keys: Record<ObjectType, string[]> = {
-    rect: ["x", "y", "w", "h", "z", "stroke", "strokeWidth", "fill"],
-    ellipse: ["x", "y", "w", "h", "z", "stroke", "strokeWidth", "fill"],
-    arrow: ["x1", "y1", "x2", "y2", "z", "heads", "stroke", "strokeWidth"],
-    text: ["x", "y", "w", "z", "text", "color", "font", "size", "bold", "plate"],
-    brush: ["points", "z", "stroke", "strokeWidth", "smooth"],
-    highlight: ["points", "z", "stroke", "strokeWidth"],
+    rect: [...BOX, "stroke", "strokeOpacity", "strokeWidth", "fill", "fillOpacity"],
+    ellipse: [...BOX, "stroke", "strokeOpacity", "strokeWidth", "fill", "fillOpacity"],
+    arrow: ["x1", "y1", "x2", "y2", "z", "heads", "stroke", "strokeOpacity", "strokeWidth"],
+    text: [
+      ...["x", "y", "w", "z", "text", "color", "colorOpacity", "font", "size", "bold"],
+      ...["plate", "plateOpacity"],
+    ],
+    brush: ["points", "z", "stroke", "strokeOpacity", "strokeWidth", "smooth"],
+    highlight: ["points", "z", "stroke", "strokeOpacity", "strokeWidth"],
     redact: ["x", "y", "w", "h", "z", "mode", "strength"],
     badge: ["x", "y", "z", "n", "color", "size"],
   };
@@ -388,6 +408,8 @@ export function applyPatch(o: AnnotationObject, patch: ObjectPatch): AnnotationO
   if (colored && patch.stroke !== undefined && patch.color === undefined) next.color = patch.stroke;
   if (!colored && o.type !== "redact" && patch.color !== undefined && patch.stroke === undefined)
     next.stroke = patch.color;
+  for (const k of ["strokeOpacity", "fillOpacity", "colorOpacity", "plateOpacity"])
+    if (typeof next[k] === "number") next[k] = clampOpacity(next[k] as number);
   return next as unknown as AnnotationObject;
 }
 

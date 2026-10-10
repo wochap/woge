@@ -22,11 +22,14 @@ const r: RectObj = {
   h: 40,
   stroke: "red",
   strokeWidth: "M",
-  fill: false,
+  fill: null,
+  fillOpacity: 0.25,
+  strokeOpacity: 1,
 };
 const a: ArrowObj = {
   id: "a",
   type: "arrow",
+  strokeOpacity: 1,
   z: 2,
   x1: 0,
   y1: 0,
@@ -47,7 +50,9 @@ const t: TextObj = {
   font: "Inter Variable",
   size: 24,
   bold: false,
-  plate: false,
+  plate: null,
+  plateOpacity: 0.7,
+  colorOpacity: 1,
 };
 
 describe("objects", () => {
@@ -93,5 +98,15 @@ describe("objects", () => {
   it("patches only fields of the type", () => {
     expect(applyPatch(r, { stroke: "green", heads: "both" })).not.toHaveProperty("heads");
     expect(applyPatch(t, { stroke: "green" })).toMatchObject({ color: "green" });
+    expect(applyPatch(a, { fill: "blue", fillOpacity: 0.5 })).toEqual(a);
+    expect(applyPatch(r, { plate: "black" })).toEqual(r);
+    expect(applyPatch(r, { fill: "blue", fillOpacity: 2 })).toMatchObject({
+      fill: "blue",
+      fillOpacity: 1,
+    });
+    expect(applyPatch(t, { plate: "black", plateOpacity: 0.5 })).toMatchObject({
+      plate: "black",
+      plateOpacity: 0.5,
+    });
   });
 });

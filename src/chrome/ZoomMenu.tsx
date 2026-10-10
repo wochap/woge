@@ -48,8 +48,8 @@ export function ZoomMenu(p: Props) {
 
   return (
     <div ref={ref} role="menu" className="menu" data-role="zoom-menu">
-      {item("Fit", "⇧1", p.onFit)}
-      {item("100%", "⇧0", p.onActual)}
+      {item("Fit", "Ctrl 0", p.onFit)}
+      {item("100%", "Ctrl 1", p.onActual)}
       {item("Zoom in", "Ctrl +", p.onZoomIn)}
       {item("Zoom out", "Ctrl −", p.onZoomOut)}
       <div className="menu-sep" />

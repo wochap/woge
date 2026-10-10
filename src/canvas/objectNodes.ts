@@ -1,12 +1,9 @@
 import Konva from "konva";
 import type { Dims, Rotation } from "../model/document";
 import {
-  FILL_ALPHA,
-  HIGHLIGHT_ALPHA,
   badgePx,
   badgeTextColor,
   freehandPx,
-  PLATE_ALPHA,
   PLATE_PAD,
   TEXT_LINE_HEIGHT,
   resolveColor,
@@ -21,7 +18,6 @@ import {
   type RectObj,
   type TextObj,
 } from "../model/objects";
-import { PLATE_COLOR } from "../model/palette";
 import type { Flavour } from "../lib/theme";
 import { redactLayout } from "../tools/redact/math";
 
@@ -44,13 +40,12 @@ export function currentFlavour(): Flavour {
   return window.document.documentElement.dataset.theme === "latte" ? "latte" : "mocha";
 }
 
-function withAlpha(hex: string, alpha: number): string {
+export function withAlpha(hex: string, alpha: number): string {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
 }
 
 export function rectAttrs(o: RectObj, c: RenderCtx) {
-  const color = resolveColor(o.stroke, c.flavour);
   return {
     id: o.id,
     name: "object",
@@ -58,9 +53,9 @@ export function rectAttrs(o: RectObj, c: RenderCtx) {
     y: o.y,
     width: o.w,
     height: o.h,
-    stroke: color,
+    stroke: withAlpha(resolveColor(o.stroke, c.flavour), o.strokeOpacity),
     strokeWidth: strokePx(o.strokeWidth, c.image),
-    fill: o.fill ? withAlpha(color, FILL_ALPHA) : undefined,
+    fill: o.fill ? withAlpha(resolveColor(o.fill, c.flavour), o.fillOpacity) : undefined,
     perfectDrawEnabled: false,
   };
 }
@@ -89,7 +84,9 @@ export function arrowAttrs(o: ArrowObj, c: RenderCtx) {
     lineCap: "round" as const,
     lineJoin: "round" as const,
     hitStrokeWidth: Math.max(sw, 12),
-    perfectDrawEnabled: false,
+    opacity: o.strokeOpacity,
+    // Composite through a buffer so the heads don't double-darken the shaft.
+    perfectDrawEnabled: o.strokeOpacity < 1,
   };
 }
 
@@ -99,7 +96,7 @@ export function textAttrs(o: TextObj, c: RenderCtx) {
     fontFamily: o.font,
     fontSize: o.size,
     fontStyle: o.bold ? "bold" : "normal",
-    fill: resolveColor(o.color, c.flavour),
+    fill: withAlpha(resolveColor(o.color, c.flavour), o.colorOpacity),
     lineHeight: TEXT_LINE_HEIGHT,
     width: o.w,
     wrap: "word",
@@ -107,15 +104,14 @@ export function textAttrs(o: TextObj, c: RenderCtx) {
   };
 }
 
-export function plateAttrs(w: number, h: number, c: RenderCtx) {
+export function plateAttrs(o: TextObj, w: number, h: number, c: RenderCtx) {
   return {
     x: -PLATE_PAD,
     y: -PLATE_PAD,
     width: w + PLATE_PAD * 2,
     height: h + PLATE_PAD * 2,
     cornerRadius: PLATE_PAD,
-    fill: PLATE_COLOR[c.flavour],
-    opacity: PLATE_ALPHA,
+    fill: o.plate ? withAlpha(resolveColor(o.plate, c.flavour), o.plateOpacity) : undefined,
     perfectDrawEnabled: false,
   };
 }
@@ -134,7 +130,7 @@ export function strokeAttrs(o: StrokeObj, c: RenderCtx) {
     tension: !hl && o.smooth ? STROKE_TENSION : 0,
     lineCap: "round" as const,
     lineJoin: "round" as const,
-    opacity: hl ? HIGHLIGHT_ALPHA : 1,
+    opacity: o.strokeOpacity,
     globalCompositeOperation: hl ? ("multiply" as const) : ("source-over" as const),
     hitStrokeWidth: Math.max(sw, HIT_PX * (c.unit ?? 1)),
     perfectDrawEnabled: false,
@@ -202,7 +198,7 @@ export function buildObjectNodes(objects: AnnotationObject[], c: RenderCtx): Kon
       case "text": {
         const g = new Konva.Group({ id: o.id, x: o.x, y: o.y });
         const t = new Konva.Text(textAttrs(o, c));
-        if (o.plate) g.add(new Konva.Rect(plateAttrs(o.w ?? t.width(), t.height(), c)));
+        if (o.plate) g.add(new Konva.Rect(plateAttrs(o, o.w ?? t.width(), t.height(), c)));
         g.add(t);
         return g;
       }

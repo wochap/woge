@@ -28,6 +28,7 @@ export function startFreehand(e: Konva.KonvaEventObject<PointerEvent>, tool: Fre
     type: tool,
     points: [],
     stroke: settings.stroke,
+    strokeOpacity: settings.strokeOpacity,
     strokeWidth: settings.strokeWidth,
     ...(tool === "brush" ? { smooth: useSettings.getState().tools.brush.smooth } : {}),
   };

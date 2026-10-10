@@ -3,7 +3,7 @@ import { clampTextSize } from "../../model/objects";
 import { useSettings } from "../../store/settings";
 import { ensureFontLoaded } from "../../lib/fonts";
 import { applyStyle, currentValue, type StripContext } from "./apply";
-import { ColorControl } from "./ShapeStrips";
+import { TargetColorControls } from "./ShapeStrips";
 import { FontCombobox } from "./FontCombobox";
 import { Toggle } from "./WidthSegmented";
 
@@ -22,7 +22,7 @@ export function TextStrip({ ctx }: { ctx: StripContext }) {
   const size = currentValue(ctx, "size") as number | undefined;
   return (
     <>
-      <ColorControl ctx={ctx} />
+      <TargetColorControls ctx={ctx} labels={["Text", "Plate"]} />
       <FontCombobox
         value={currentValue(ctx, "font") as string | undefined}
         recent={recent}
@@ -57,11 +57,6 @@ export function TextStrip({ ctx }: { ctx: StripContext }) {
       >
         <TextB size={14} weight="bold" />
       </Toggle>
-      <Toggle
-        label="Plate"
-        on={!!currentValue(ctx, "plate")}
-        onChange={(v) => applyStyle(ctx, { plate: v })}
-      />
     </>
   );
 }

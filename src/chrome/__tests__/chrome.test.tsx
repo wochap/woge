@@ -1,3 +1,4 @@
+import { ShortcutOverlay } from "../ShortcutOverlay";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { TopBar, type TopBarProps } from "../TopBar";
 import { Toolbar } from "../Toolbar";
@@ -65,7 +66,13 @@ describe("TopBar", () => {
     const items = Array.from(screen.getByRole("menu").querySelectorAll("button")).map(
       (i) => i.textContent,
     );
-    expect(items).toEqual(["Fit⇧1", "100%⇧0", "Zoom inCtrl +", "Zoom outCtrl −", "Checkerboard"]);
+    expect(items).toEqual([
+      "FitCtrl 0",
+      "100%Ctrl 1",
+      "Zoom inCtrl +",
+      "Zoom outCtrl −",
+      "Checkerboard",
+    ]);
   });
 
   it("compact folds Fit/100% and moves Undo/Redo in", () => {
@@ -126,4 +133,32 @@ describe("Toolbar", () => {
 it("formats the pointer", () => {
   expect(formatPointer({ x: 120, y: 45 })).toBe("x 120  y 45");
   expect(formatPointer(null)).toBe("");
+});
+
+describe("ShortcutOverlay", () => {
+  it("lists the Colour column and the moved zoom keys", () => {
+    render(<ShortcutOverlay onClose={() => {}} />);
+    expect(screen.getByText("Colour")).toBeInTheDocument();
+    expect(screen.getByText("⇧1 … ⇧0")).toBeInTheDocument();
+    expect(screen.getByText("Ctrl 0")).toBeInTheDocument();
+    expect(screen.getByText("Hold ⇧ for fill / plate")).toBeInTheDocument();
+  });
+
+  it("switches to two columns and scrolls at 640×520", () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    Object.assign(window, { innerWidth: 640, innerHeight: 520 });
+    const { container } = render(<ShortcutOverlay onClose={() => {}} />);
+    expect(container.querySelector(".overlay-cols")!.classList.contains("two-col")).toBe(true);
+    expect(container.querySelector(".overlay-body")).not.toBeNull();
+    Object.assign(window, { innerWidth: w, innerHeight: h });
+  });
+
+  it("uses four columns at the design width", () => {
+    const w = window.innerWidth;
+    Object.assign(window, { innerWidth: 1280 });
+    const { container } = render(<ShortcutOverlay onClose={() => {}} />);
+    expect(container.querySelector(".overlay-cols")!.classList.contains("two-col")).toBe(false);
+    Object.assign(window, { innerWidth: w });
+  });
 });

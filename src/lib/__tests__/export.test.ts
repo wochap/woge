@@ -96,14 +96,78 @@ describe("exportDocument", () => {
           h: 40,
           stroke: "red",
           strokeWidth: "M",
-          fill: false,
+          fill: null,
+          fillOpacity: 0.25,
+          strokeOpacity: 1,
         },
       ],
     };
     const stage = buildExportStage(d, bitmap, "png", "latte");
     const node = stage.findOne("#r1")!;
-    expect(node.getAttr("stroke")).toBe("#d20f39");
+    expect(node.getAttr("stroke")).toBe("rgba(210,15,57,1)");
     expect(node.getAttr("strokeWidth")).toBe(4);
+    stage.destroy();
+  });
+
+  it("exports colour opacities (jsdom has no pixels: the blend is the fill alpha)", () => {
+    const d: Document = {
+      ...doc(),
+      objects: [
+        {
+          id: "r1",
+          type: "rect",
+          z: 1,
+          x: 200,
+          y: 100,
+          w: 50,
+          h: 40,
+          stroke: "red",
+          strokeWidth: "M",
+          strokeOpacity: 0.5,
+          fill: "yellow",
+          fillOpacity: 0.4,
+        },
+        {
+          id: "a1",
+          type: "arrow",
+          z: 2,
+          x1: 0,
+          y1: 0,
+          x2: 9,
+          y2: 9,
+          heads: "end",
+          stroke: "blue",
+          strokeOpacity: 0.6,
+          strokeWidth: "M",
+        },
+        {
+          id: "t1",
+          type: "text",
+          z: 3,
+          x: 0,
+          y: 0,
+          text: "hi",
+          color: "yellow",
+          colorOpacity: 0.6,
+          font: "Inter Variable",
+          size: 24,
+          bold: false,
+          plate: "black",
+          plateOpacity: 0.5,
+        },
+      ],
+    };
+    const stage = buildExportStage(d, bitmap, "png", "latte");
+    const r = stage.findOne("#r1")!;
+    expect(r.getAttr("stroke")).toBe("rgba(210,15,57,0.5)");
+    expect(r.getAttr("fill")).toBe("rgba(223,142,29,0.4)");
+    const a = stage.findOne("#a1")!;
+    expect(a.opacity()).toBe(0.6);
+    expect(a.getAttr("perfectDrawEnabled")).toBe(true);
+    const [plate, text] = (stage.findOne("#t1") as Konva.Group).getChildren() as Konva.Shape[];
+    expect(plate.getAttr("fill")).toBe("rgba(17,17,27,0.5)");
+    expect(plate.opacity()).toBe(1);
+    expect(text.getAttr("fill")).toBe("rgba(223,142,29,0.6)");
     stage.destroy();
   });
 

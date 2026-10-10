@@ -14,7 +14,9 @@ describe("shape creation", () => {
       h: 200,
       stroke: "red",
       strokeWidth: "M",
-      fill: false,
+      fill: null,
+      fillOpacity: 0.25,
+      strokeOpacity: 1,
     });
   });
 

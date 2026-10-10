@@ -1,16 +1,56 @@
-import type { ColorKey, ObjectType, StrokeWidth } from "../../model/objects";
+import { useState } from "react";
+import type { ObjectType, StrokeWidth } from "../../model/objects";
+import type { ColorRole } from "../../model/roles";
 
 const WIDTH_TYPES: ObjectType[] = ["rect", "ellipse", "arrow", "brush", "highlight"];
-import { applyStyle, currentValue, type StripContext } from "./apply";
+import { applyStyle, currentRole, currentValue, setColour, type StripContext } from "./apply";
+import { OpacitySlider } from "./OpacitySlider";
 import { Swatches } from "./Swatches";
-import { Segmented, Toggle, WidthSegmented } from "./WidthSegmented";
+import { TargetChips } from "./TargetChips";
+import { Segmented, WidthSegmented } from "./WidthSegmented";
 
-export function ColorControl({ ctx }: { ctx: StripContext }) {
+/** Swatches for `role`; `chips` reserves the ⊘ slot so the row never changes width. */
+export function ColorControl({
+  ctx,
+  role = "primary",
+  chips = false,
+}: {
+  ctx: StripContext;
+  role?: ColorRole;
+  chips?: boolean;
+}) {
   return (
     <Swatches
-      value={currentValue(ctx, "stroke") as ColorKey | undefined}
-      onChange={(c) => applyStyle(ctx, { stroke: c })}
+      value={currentRole(ctx, role).color}
+      secondary={role === "secondary"}
+      noneSlot={chips}
+      onChange={(c) => setColour(ctx, role, c)}
     />
+  );
+}
+
+/** Target chips, swatches and opacity for types with a fill or plate. */
+export function TargetColorControls({
+  ctx,
+  labels,
+}: {
+  ctx: StripContext;
+  labels: [string, string];
+}) {
+  // Strip-local; `AnnotationStrip` remounts on a kind change, resetting to primary.
+  const [role, setRole] = useState<ColorRole>("primary");
+  return (
+    <>
+      <TargetChips
+        labels={labels}
+        value={role}
+        primary={currentRole(ctx, "primary")}
+        secondary={currentRole(ctx, "secondary")}
+        onChange={setRole}
+      />
+      <ColorControl ctx={ctx} role={role} chips />
+      <OpacitySlider ctx={ctx} role={role} />
+    </>
   );
 }
 
@@ -26,13 +66,8 @@ export function WidthControl({ ctx }: { ctx: StripContext }) {
 function BoxStrip({ ctx }: { ctx: StripContext }) {
   return (
     <>
-      <ColorControl ctx={ctx} />
+      <TargetColorControls ctx={ctx} labels={["Border", "Fill"]} />
       <WidthControl ctx={ctx} />
-      <Toggle
-        label="Fill"
-        on={!!currentValue(ctx, "fill")}
-        onChange={(v) => applyStyle(ctx, { fill: v })}
-      />
     </>
   );
 }
@@ -44,6 +79,7 @@ export function ArrowStrip({ ctx }: { ctx: StripContext }) {
   return (
     <>
       <ColorControl ctx={ctx} />
+      <OpacitySlider ctx={ctx} role="primary" />
       <WidthControl ctx={ctx} />
       <Segmented
         label="Heads"

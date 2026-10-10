@@ -119,7 +119,7 @@ function TextNode({ obj, ctx, interactive, hidden }: NodeProps & { obj: TextObj 
       visible={!hidden}
       {...handlers(obj, interactive)}
     >
-      {obj.plate && <KRect {...plateAttrs(obj.w ?? size.w, size.h, ctx)} />}
+      {obj.plate && <KRect {...plateAttrs(obj, obj.w ?? size.w, size.h, ctx)} />}
       <Text ref={ref} {...textAttrs(obj, ctx)} />
     </Group>
   );

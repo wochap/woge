@@ -1,6 +1,6 @@
 import { useEditor } from "../../store/editor";
 import { useSettings } from "../../store/settings";
-import { stripContext } from "./apply";
+import { stripContext, type StripContext } from "./apply";
 import { ArrowStrip, EllipseStrip, MixedStrip, RectStrip } from "./ShapeStrips";
 import { TextStrip } from "./TextStrip";
 import { BrushStrip } from "./BrushStrip";
@@ -17,6 +17,10 @@ export function useAnnotationStrip() {
   if (!objects) return null;
   const ctx = stripContext(tool, selection, objects);
   if (!ctx) return null;
+  return <KindStrip key={ctx.kind} ctx={ctx} />;
+}
+
+function KindStrip({ ctx }: { ctx: StripContext }) {
   switch (ctx.kind) {
     case "rect":
       return <RectStrip ctx={ctx} />;

@@ -1,8 +1,12 @@
 import { create } from "zustand";
 import { readState, writeState, type ConfigDefaults } from "../lib/backend";
-import { isColorKey, type ColorKey } from "../model/palette";
+import { contrastKey, isColorKey, type ColorKey } from "../model/palette";
 import {
+  DEFAULT_FILL_OPACITY,
+  DEFAULT_HIGHLIGHT_OPACITY,
+  DEFAULT_PLATE_OPACITY,
   PIXELATE_RANGE,
+  clampOpacity,
   clampStrength,
   clampTextSize,
   type ArrowHeads,
@@ -19,29 +23,36 @@ export const STATE_VERSION = 1;
 
 export interface ShapeSettings {
   stroke: ColorKey;
+  strokeOpacity: number;
   strokeWidth: StrokeWidth;
-  fill: boolean;
+  fill: ColorKey | null;
+  fillOpacity: number;
 }
 export interface ArrowSettings {
   stroke: ColorKey;
+  strokeOpacity: number;
   strokeWidth: StrokeWidth;
   heads: ArrowHeads;
 }
 export interface TextSettings {
   color: ColorKey;
+  colorOpacity: number;
   font: string;
   size: number;
   bold: boolean;
-  plate: boolean;
+  plate: ColorKey | null;
+  plateOpacity: number;
 }
 
 export interface BrushSettings {
   stroke: ColorKey;
+  strokeOpacity: number;
   strokeWidth: StrokeWidth;
   smooth: boolean;
 }
 export interface HighlightSettings {
   stroke: ColorKey;
+  strokeOpacity: number;
   strokeWidth: StrokeWidth;
 }
 export interface RedactSettings {
@@ -75,20 +86,37 @@ export type SettingsPatch = Partial<
     }
 >;
 
+const shape = (): ShapeSettings => ({
+  stroke: "red",
+  strokeOpacity: 1,
+  strokeWidth: "M",
+  fill: null,
+  fillOpacity: DEFAULT_FILL_OPACITY,
+});
+
 export function builtInDefaults(): ToolSettings {
   return {
-    rect: { stroke: "red", strokeWidth: "M", fill: false },
-    ellipse: { stroke: "red", strokeWidth: "M", fill: false },
-    arrow: { stroke: "red", strokeWidth: "M", heads: "end" },
-    text: { color: "red", font: DEFAULT_FONT, size: 24, bold: false, plate: false },
-    brush: { stroke: "red", strokeWidth: "M", smooth: true },
-    highlight: { stroke: "yellow", strokeWidth: "M" },
+    rect: shape(),
+    ellipse: shape(),
+    arrow: { stroke: "red", strokeOpacity: 1, strokeWidth: "M", heads: "end" },
+    text: {
+      color: "red",
+      colorOpacity: 1,
+      font: DEFAULT_FONT,
+      size: 24,
+      bold: false,
+      plate: null,
+      plateOpacity: DEFAULT_PLATE_OPACITY,
+    },
+    brush: { stroke: "red", strokeOpacity: 1, strokeWidth: "M", smooth: true },
+    highlight: { stroke: "yellow", strokeOpacity: DEFAULT_HIGHLIGHT_OPACITY, strokeWidth: "M" },
     redact: { mode: "pixelate", strength: PIXELATE_RANGE.default },
     badge: { color: "mauve", size: "M" },
   };
 }
 
 const isWidth = (v: unknown): v is StrokeWidth => v === "S" || v === "M" || v === "L";
+const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
 /** Config `[defaults]` over built-ins. */
 export function seedFromConfig(d: ConfigDefaults | undefined): ToolSettings {
@@ -125,12 +153,21 @@ export function mergeState(
     if (!s || typeof s !== "object") continue;
     if (isColorKey(s.stroke)) tools[k].stroke = s.stroke;
     if (isWidth(s.strokeWidth)) tools[k].strokeWidth = s.strokeWidth;
-    if (typeof s.fill === "boolean") tools[k].fill = s.fill;
+    if (isNum(s.strokeOpacity)) tools[k].strokeOpacity = clampOpacity(s.strokeOpacity);
+    if (isNum(s.fillOpacity)) tools[k].fillOpacity = clampOpacity(s.fillOpacity);
+    if (s.fill === null || isColorKey(s.fill)) tools[k].fill = s.fill;
+    else if (s.fill === false) tools[k].fill = null;
+    else if (s.fill === true) {
+      // Legacy toggle: the border colour at the old fixed 25%.
+      tools[k].fill = tools[k].stroke;
+      tools[k].fillOpacity = DEFAULT_FILL_OPACITY;
+    }
   }
   const a = src.arrow;
   if (a && typeof a === "object") {
     if (isColorKey(a.stroke)) tools.arrow.stroke = a.stroke;
     if (isWidth(a.strokeWidth)) tools.arrow.strokeWidth = a.strokeWidth;
+    if (isNum(a.strokeOpacity)) tools.arrow.strokeOpacity = clampOpacity(a.strokeOpacity);
     if (a.heads === "end" || a.heads === "both") tools.arrow.heads = a.heads;
   }
   const t = src.text;
@@ -139,18 +176,28 @@ export function mergeState(
     if (typeof t.font === "string" && t.font) tools.text.font = t.font;
     if (typeof t.size === "number") tools.text.size = clampTextSize(t.size);
     if (typeof t.bold === "boolean") tools.text.bold = t.bold;
-    if (typeof t.plate === "boolean") tools.text.plate = t.plate;
+    if (isNum(t.colorOpacity)) tools.text.colorOpacity = clampOpacity(t.colorOpacity);
+    if (isNum(t.plateOpacity)) tools.text.plateOpacity = clampOpacity(t.plateOpacity);
+    if (t.plate === null || isColorKey(t.plate)) tools.text.plate = t.plate;
+    else if (t.plate === false) tools.text.plate = null;
+    else if (t.plate === true) {
+      // Legacy toggle: auto-contrast plate at the old 70%.
+      tools.text.plate = contrastKey(tools.text.color, "mocha");
+      tools.text.plateOpacity = DEFAULT_PLATE_OPACITY;
+    }
   }
   const b = src.brush;
   if (b && typeof b === "object") {
     if (isColorKey(b.stroke)) tools.brush.stroke = b.stroke;
     if (isWidth(b.strokeWidth)) tools.brush.strokeWidth = b.strokeWidth;
+    if (isNum(b.strokeOpacity)) tools.brush.strokeOpacity = clampOpacity(b.strokeOpacity);
     if (typeof b.smooth === "boolean") tools.brush.smooth = b.smooth;
   }
   const h = src.highlight;
   if (h && typeof h === "object") {
     if (isColorKey(h.stroke)) tools.highlight.stroke = h.stroke;
     if (isWidth(h.strokeWidth)) tools.highlight.strokeWidth = h.strokeWidth;
+    if (isNum(h.strokeOpacity)) tools.highlight.strokeOpacity = clampOpacity(h.strokeOpacity);
   }
   const x = src.redact;
   if (x && typeof x === "object") {

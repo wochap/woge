@@ -19,6 +19,7 @@ const stroke: StrokeObj = {
   id: "s",
   z: 1,
   type: "brush",
+  strokeOpacity: 1,
   points: [0, 0, 10, 20],
   stroke: "red",
   strokeWidth: "M",

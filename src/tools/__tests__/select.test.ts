@@ -15,7 +15,9 @@ const rect = (x: number, w = 10): Omit<RectObj, "id" | "z"> => ({
   h: 10,
   stroke: "red",
   strokeWidth: "M",
-  fill: false,
+  fill: null,
+  fillOpacity: 0.25,
+  strokeOpacity: 1,
 });
 
 function setup() {

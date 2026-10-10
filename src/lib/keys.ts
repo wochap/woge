@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export type KeyColumn = "tools" | "navigation" | "file";
+export type KeyColumn = "tools" | "navigation" | "colour" | "file";
 
 export interface KeyBinding {
   id: string;
@@ -22,6 +22,8 @@ const b = (
   keys: string[] = [],
   enabled = false,
 ): KeyBinding => ({ id, label, column, display, keys, enabled });
+
+const DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 
 /** Every shortcut from the design's overlay (board 1f). */
 export const KEYMAP: KeyBinding[] = [
@@ -70,8 +72,8 @@ export const KEYMAP: KeyBinding[] = [
   b("nav.panDrag", "Pan (drag)", "navigation", "Space + drag", [], true),
   b("nav.zoom", "Zoom", "navigation", "Ctrl + Scroll", [], true),
   b("nav.pinch", "Zoom (touchpad)", "navigation", "Pinch", [], true),
-  b("view.fit", "Fit to window", "navigation", "⇧1", ["shift+1", "shift+!"], true),
-  b("view.actual", "Actual size", "navigation", "⇧0", ["shift+0", "shift+)"], true),
+  b("view.fit", "Fit to window", "navigation", "Ctrl 0", ["ctrl+0"], true),
+  b("view.actual", "Actual size", "navigation", "Ctrl 1", ["ctrl+1"], true),
   b(
     "view.zoomIn",
     "Zoom in",
@@ -81,6 +83,18 @@ export const KEYMAP: KeyBinding[] = [
     true,
   ),
   b("view.zoomOut", "Zoom out", "navigation", "Ctrl −", ["ctrl+-", "ctrl+_", "ctrl+shift+-"], true),
+
+  b("colour.primary", "Border · text · stroke", "colour", "1 … 0", DIGITS, true),
+  b(
+    "colour.fill",
+    "Fill · plate",
+    "colour",
+    "⇧1 … ⇧0",
+    DIGITS.map((d) => `shift+${d}`),
+    true,
+  ),
+  b("opacity.primary", "Border opacity −/+ 10%", "colour", "[ · ]", ["[", "]"], true),
+  b("opacity.fill", "Fill opacity −/+ 10%", "colour", "{ · }", ["shift+[", "shift+]"], true),
 
   b("file.open", "Open", "file", "Ctrl O", ["ctrl+o"], true),
   b("file.paste", "Paste", "file", "Ctrl V", ["ctrl+v"], true),
@@ -113,6 +127,7 @@ export const KEYMAP: KeyBinding[] = [
 export const COLUMNS: { id: KeyColumn; title: string }[] = [
   { id: "tools", title: "Tools" },
   { id: "navigation", title: "Navigation" },
+  { id: "colour", title: "Colour" },
   { id: "file", title: "File & edit" },
 ];
 
@@ -126,8 +141,10 @@ export function comboOf(
 ): string {
   let key = e.key.toLowerCase();
   if (key === " ") key = "space";
-  // Shift+digit reports the shifted glyph on most layouts; fall back to the physical digit.
-  if (e.shiftKey && /^Digit\d$/.test(e.code)) key = e.code.slice(5);
+  // Digits and brackets match by physical key: Shift (and non-US layouts) change the glyph.
+  if (/^Digit\d$/.test(e.code)) key = e.code.slice(5);
+  else if (e.code === "BracketLeft") key = "[";
+  else if (e.code === "BracketRight") key = "]";
   const parts: string[] = [];
   if (e.ctrlKey || e.metaKey) parts.push("ctrl");
   if (e.shiftKey) parts.push("shift");
@@ -198,8 +215,8 @@ export function useKeymap(handlers: KeyHandlers, opts: KeymapOptions = {}) {
   ref.current = { handlers, opts };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.repeat && !/^(ctrl\+[=+\-_])/.test(comboOf(e))) {
-        // Allow repeat only for zoom steps.
+      if (e.repeat && !/^(ctrl\+[=+\-_]|(shift\+)?[[\]]$)/.test(comboOf(e))) {
+        // Allow repeat only for zoom and opacity steps.
         if (!isTextTarget(e.target)) e.preventDefault();
         return;
       }
