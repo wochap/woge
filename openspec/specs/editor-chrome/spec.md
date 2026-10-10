@@ -21,11 +21,19 @@ The UI SHALL define all colours, fonts, radii and chrome geometry as CSS custom 
 - **THEN** `data-theme="latte"` is set regardless of system preference
 
 ### Requirement: Layout matches the design
-The window SHALL be composed of a top bar (`--topbar-h`) spanning the full width, a left toolbar (`--toolbar-w`), an options strip (`--strip-h`) under the top bar that is present only when the active tool has options, the canvas area filling the rest, and an optional status line (`--status-h`) at the bottom when `status_line` is enabled.
+The window SHALL be composed of a top bar (`--topbar-h`) spanning the full width, a left toolbar (`--toolbar-w`), an options strip (`--strip-h`) under the top bar that is always present, the canvas area filling the rest, and an optional status line (`--status-h`) at the bottom when `status_line` is enabled. The options strip row SHALL never collapse, so the canvas area keeps the same size when the active tool, the selection or the mode changes.
 
 #### Scenario: Default layout
-- **WHEN** an image is loaded and the Select tool is active
-- **THEN** the top bar, toolbar, canvas and status line are visible and no options strip is shown
+- **WHEN** an image is loaded and the Select tool is active with nothing selected
+- **THEN** the top bar, toolbar, options strip (showing its empty-state hint), canvas and status line are visible
+
+#### Scenario: Canvas does not shift on tool change
+- **WHEN** the user switches from Select with nothing selected to the Rectangle tool, then presses Esc
+- **THEN** the canvas area's position and size are unchanged throughout and no viewport refit is triggered
+
+#### Scenario: Canvas does not shift on selection
+- **WHEN** the user selects an object and then clears the selection
+- **THEN** the canvas area's position and size are unchanged
 
 #### Scenario: Status line disabled
 - **WHEN** `status_line = false`
@@ -54,11 +62,11 @@ The toolbar SHALL show, in order with dividers: Select (V), Crop (C), Resize (S)
 - **THEN** its button shows the `--surface-hover` background and `--accent` icon colour
 
 ### Requirement: Empty state
-With no document the canvas area SHALL show the empty state from board 1e: an image icon, "Drop an image, paste from clipboard (Ctrl V), or open (Ctrl O)", and a short list of Pan, Zoom, Copy result and All shortcuts hints. Dragging a file over the window SHALL highlight the drop zone.
+With no document the canvas area SHALL show the empty state from board 1e: an image icon, "Drop an image, paste from clipboard (Ctrl V), or open (Ctrl O)", and a short list of Pan, Zoom, Copy result and All shortcuts hints. Dragging a file over the window SHALL highlight the drop zone. The options strip SHALL stay present and read `No image yet · drop, paste or open one`.
 
 #### Scenario: Launch without input
 - **WHEN** `woge` starts with no input
-- **THEN** the empty state is shown and the toolbar tools are disabled
+- **THEN** the empty state is shown, the toolbar tools are disabled and the options strip reads "No image yet · drop, paste or open one"
 
 ### Requirement: Shortcut overlay
 Pressing `?` SHALL open a dimmed overlay listing all shortcuts in three columns (Tools, Navigation, File & edit) generated from the keymap table. `?` or `Esc` SHALL close it. While open, other shortcuts SHALL be inert.
@@ -75,11 +83,15 @@ Global shortcuts SHALL not fire while focus is in an input, textarea or contente
 - **THEN** the Select tool is not activated
 
 ### Requirement: Compact layout
-Below 960px window width the file name SHALL truncate first (dimensions never), Fit and 100% SHALL move into the zoom menu, Save as SHALL become an icon button, and the options strip SHALL scroll horizontally with a fading right edge instead of wrapping. Below 600px height Undo and Redo SHALL move to the top bar.
+Below 960px window width the file name SHALL truncate first (dimensions never), Fit and 100% SHALL move into the zoom menu, Save as SHALL become an icon button, and the options strip SHALL scroll horizontally with a fading right edge instead of wrapping. The strip row SHALL remain present at every window size. Below 600px height Undo and Redo SHALL move to the top bar.
 
 #### Scenario: Minimum window
 - **WHEN** the window is 640×520
-- **THEN** no element overflows, the toolbar fits without scrolling and Undo/Redo are in the top bar
+- **THEN** no element overflows, the toolbar fits without scrolling, the options strip row is present and Undo/Redo are in the top bar
+
+#### Scenario: Long strip in a narrow window
+- **WHEN** the window is 640px wide and a tool with more options than fit is active
+- **THEN** the strip scrolls sideways with a fading right edge and its height stays `--strip-h`
 
 ### Requirement: Status line
 When enabled the status line SHALL show the pointer position in image pixels as `x 1532 y 860` in the mono font, blank when the pointer is outside the image. Later changes append selection and mode details.
@@ -104,7 +116,7 @@ The toolbar SHALL enable Crop, Resize, Rotate, Undo and Redo. Undo/Redo enableme
 
 #### Scenario: Mode strip
 - **WHEN** the user enters crop mode
-- **THEN** the options strip appears with the crop presets and hint, and disappears on confirm or cancel
+- **THEN** the options strip shows the crop presets and hint, and returns to the Select strip on confirm or cancel
 
 ### Requirement: Mode-aware status line
 In crop mode the status line SHALL append `crop W × H @ X,Y`; in resize mode `scale N%`.
@@ -148,3 +160,17 @@ The toolbar SHALL enable Brush, Highlighter, Redact and Counter badge, completin
 #### Scenario: All tools enabled
 - **WHEN** a document exists
 - **THEN** every toolbar button is enabled and shows its shortcut tooltip
+### Requirement: Options strip label and empty hint
+Every options strip SHALL begin with the active tool or mode name (for example "Select", "Rectangle", "Crop", "Resize") as a muted label of at least 64px width, per board 1p. When the active tool and selection have no options to show and a document is open, the strip SHALL show the hint `Click an object to edit its style` after the label and `Del removes · ? shortcuts` aligned to the right edge, per boards 1p, 1p-b, 1f and 1l.
+
+#### Scenario: Select with nothing selected
+- **WHEN** an image is loaded, the Select tool is active and nothing is selected
+- **THEN** the strip reads "Select", then "Click an object to edit its style", with "Del removes · ? shortcuts" on the right
+
+#### Scenario: Tool with options
+- **WHEN** the Rectangle tool is active
+- **THEN** the strip begins with the label "Rectangle" followed by the rectangle options and no empty-state hint
+
+#### Scenario: Mode label
+- **WHEN** resize mode is active
+- **THEN** the strip begins with the label "Resize"
