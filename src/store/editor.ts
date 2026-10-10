@@ -65,7 +65,8 @@ interface EditorState {
   cropDraft: Rect | null;
   cropPreset: CropPreset;
   /** Transient output size while in resize mode. */
-  resizeDraft: Dims | null;
+  /** Output-space draft rect; `x/y` is its offset from the current image origin (view-only). */
+  resizeDraft: Rect | null;
   resizeLock: boolean;
   /** Set while a canvas pointer drag is in progress; undo/redo are inert. */
   pointerDrag: boolean;
@@ -277,7 +278,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     const { document, mode, resizeDraft } = get();
     if (!document) return null;
     if (mode === "crop") return rotatedDims(document);
-    if (mode === "resize" && resizeDraft) return resizeDraft;
+    if (mode === "resize" && resizeDraft) return { w: resizeDraft.w, h: resizeDraft.h };
     return visibleSize(document);
   },
   setViewport(view) {

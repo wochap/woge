@@ -83,14 +83,17 @@ export function Stage({ checkerboard, children }: Props) {
   if (doc && mode === "crop") {
     const full = rotatedDims(doc);
     shown = { ...doc, crop: { x: 0, y: 0, ...full }, size: full };
-  } else if (doc && mode === "resize" && resizeDraft) shown = { ...doc, size: resizeDraft };
+  } else if (doc && mode === "resize" && resizeDraft) shown = { ...doc, size: { w: resizeDraft.w, h: resizeDraft.h } };
+  // Resize previews the draft at its offset so the dragged handle's opposite side stays put.
+  const resizeOffset =
+    mode === "resize" && resizeDraft ? { x: resizeDraft.x, y: resizeDraft.y } : { x: 0, y: 0 };
   const docScale = shown ? shown.size.w / shown.crop.w : 1;
 
   const anchor =
     mode === "crop"
       ? cropDraft
       : mode === "resize" && resizeDraft
-        ? { x: 0, y: 0, ...resizeDraft }
+        ? resizeDraft
         : null;
   let anchorScreen = null;
   if (anchor) {
@@ -124,12 +127,18 @@ export function Stage({ checkerboard, children }: Props) {
             listening={false}
             imageSmoothingEnabled={view.scale * docScale < 1}
           >
-            {shown && bitmap && <DocumentGroup doc={shown} bitmap={bitmap} />}
+            {shown && bitmap && (
+              <Group x={resizeOffset.x} y={resizeOffset.y}>
+                <DocumentGroup doc={shown} bitmap={bitmap} />
+              </Group>
+            )}
           </Layer>
           <Layer name="objects" listening={mode === "none"}>
             {shown && (
-              <Group name={OBJECTS_ROOT} {...groupAttrs(shown)}>
-                <ObjectsLayer doc={shown} />
+              <Group x={resizeOffset.x} y={resizeOffset.y}>
+                <Group name={OBJECTS_ROOT} {...groupAttrs(shown)}>
+                  <ObjectsLayer doc={shown} />
+                </Group>
               </Group>
             )}
           </Layer>

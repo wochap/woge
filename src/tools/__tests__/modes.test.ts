@@ -80,8 +80,8 @@ describe("modes", () => {
 
   it("resize then undo restores size", () => {
     enterMode("resize");
-    expect(useEditor.getState().resizeDraft).toEqual({ w: 1920, h: 1080 });
-    useEditor.setState({ resizeDraft: { w: 960, h: 540 } });
+    expect(useEditor.getState().resizeDraft).toEqual({ x: 0, y: 0, w: 1920, h: 1080 });
+    useEditor.setState({ resizeDraft: { x: 0, y: 0, w: 960, h: 540 } });
     confirmMode();
     expect(useEditor.getState().document!.size).toEqual({ w: 960, h: 540 });
     useEditor.getState().undo();

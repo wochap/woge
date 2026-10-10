@@ -179,7 +179,7 @@ kbd {
 .editor {
   display: grid;
   grid-template-columns: var(--toolbar-w) 1fr;
-  grid-template-rows: var(--topbar-h) auto 1fr auto;
+  grid-template-rows: var(--topbar-h) var(--strip-h) 1fr auto;
   height: 100%;
   background: var(--bg);
   position: relative;
@@ -489,6 +489,19 @@ kbd {
   font-size: var(--fs-strip);
   box-sizing: border-box;
   white-space: nowrap;
+}
+.strip-label {
+  min-width: 64px;
+  flex-shrink: 0;
+  color: var(--subtext);
+  font-weight: 500;
+}
+.strip-empty {
+  color: var(--muted);
+}
+.strip-meta {
+  margin-left: auto;
+  padding-left: 12px;
 }
 .options-strip.compact {
   overflow-x: auto;

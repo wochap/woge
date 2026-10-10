@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Stage } from "./canvas/Stage";
 import { EmptyState } from "./chrome/EmptyState";
-import { OptionsStrip } from "./chrome/OptionsStrip";
+import { OptionsStrip, editorRows, stripLabel } from "./chrome/OptionsStrip";
 import { ShortcutOverlay } from "./chrome/ShortcutOverlay";
 import { StatusLine } from "./chrome/StatusLine";
 import { Toast } from "./chrome/Toast";
@@ -219,7 +219,7 @@ export default function App() {
   return (
     <div
       className="editor"
-      style={{ gridTemplateRows: `var(--topbar-h) auto 1fr ${s.statusLine ? "auto" : "0"}` }}
+      style={{ gridTemplateRows: editorRows(s.statusLine) }}
     >
       <TopBar
         name={loadingName ?? doc?.source.name ?? null}
@@ -249,7 +249,11 @@ export default function App() {
         onSelect={selectTool}
       />
       {/* Modes and annotation tools render their controls here. */}
-      <OptionsStrip compact={compact.narrow}>
+      <OptionsStrip
+        compact={compact.narrow}
+        label={stripLabel(s.mode !== "none" ? s.mode : s.activeTool)}
+        hasDocument={!!doc}
+      >
         {s.mode === "crop" ? (
           <CropStrip />
         ) : s.mode === "resize" ? (

@@ -53,7 +53,8 @@ export function ResizeStrip() {
   const lock = useEditor((s) => s.resizeLock);
   if (!doc || !size) return null;
   const orig = originalSize(doc);
-  const set = (d: { w: number; h: number }) => useEditor.setState({ resizeDraft: d });
+  const set = (d: { w: number; h: number }) =>
+    useEditor.setState({ resizeDraft: { x: size.x, y: size.y, w: d.w, h: d.h } });
   return (
     <>
       <NumField label="W" value={size.w} onApply={(n) => set(setWidth(orig, size, n, lock))} />
@@ -70,7 +71,7 @@ export function ResizeStrip() {
       <span className="strip-muted">
         from {orig.w} × {orig.h}
       </span>
-      <span className="strip-hint">Shift: unlock aspect · Enter apply</span>
+      <span className="strip-hint">Opposite corner stays put · Shift unlock aspect · Enter apply</span>
     </>
   );
 }

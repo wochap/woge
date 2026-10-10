@@ -2,7 +2,7 @@ import { useEditor, type Mode } from "../store/editor";
 import { clampMove, fitAspect, clampSide } from "../model/geometry";
 import { rotatedDims } from "../model/document";
 import { applyCrop, presetRatio } from "./crop/math";
-import { applyResize, originalSize, setHeight, setWidth } from "./resize/math";
+import { applyResize, originalSize, panForDraft, setHeight, setWidth } from "./resize/math";
 
 const store = useEditor.getState;
 
@@ -27,7 +27,7 @@ export function enterMode(mode: Exclude<Mode, "none">) {
     useEditor.setState({
       mode,
       activeTool: "resize",
-      resizeDraft: { ...doc.size },
+      resizeDraft: { x: 0, y: 0, ...doc.size },
       resizeLock: true,
     });
   }
@@ -54,11 +54,13 @@ export function confirmMode() {
     if (rect) store().commit(applyCrop(doc, rect));
     store().fit();
   } else if (s.mode === "resize") {
-    const size = s.resizeDraft;
+    const draft = s.resizeDraft;
+    const fitted = s.fitted;
     leave(false);
-    if (size && (size.w !== doc.size.w || size.h !== doc.size.h))
-      store().commit(applyResize(doc, size));
-    if (store().fitted) store().fit();
+    if (draft && (draft.w !== doc.size.w || draft.h !== doc.size.h))
+      store().commit(applyResize(doc, draft));
+    if (fitted) store().fit();
+    else if (draft && (draft.x || draft.y)) store().setViewport(panForDraft(s.viewport, draft));
   }
 }
 
@@ -85,7 +87,9 @@ export function nudge(dx: number, dy: number) {
       dx !== 0
         ? setWidth(orig, cur, cur.w + dx, s.resizeLock)
         : setHeight(orig, cur, cur.h - dy, s.resizeLock);
-    useEditor.setState({ resizeDraft: { w: clampSide(next.w), h: clampSide(next.h) } });
+    useEditor.setState({
+      resizeDraft: { x: cur.x, y: cur.y, w: clampSide(next.w), h: clampSide(next.h) },
+    });
   }
 }
 
