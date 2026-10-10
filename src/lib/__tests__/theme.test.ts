@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { resolveTheme, useTheme } from "../theme";
+import { initDocumentTheme, resolveTheme, useTheme } from "../theme";
 
 function mockMatchMedia(dark: boolean) {
   const listeners = new Set<(e: MediaQueryListEvent) => void>();
@@ -16,6 +16,22 @@ function mockMatchMedia(dark: boolean) {
 }
 
 describe("theme", () => {
+  it("initDocumentTheme keeps a forced data-theme", () => {
+    mockMatchMedia(false);
+    document.documentElement.dataset.theme = "mocha";
+    expect(initDocumentTheme()).toBe("mocha");
+    expect(document.documentElement.dataset.theme).toBe("mocha");
+  });
+
+  it("initDocumentTheme falls back to the system when unset", () => {
+    mockMatchMedia(false);
+    delete document.documentElement.dataset.theme;
+    expect(initDocumentTheme()).toBe("latte");
+    mockMatchMedia(true);
+    delete document.documentElement.dataset.theme;
+    expect(initDocumentTheme()).toBe("mocha");
+  });
+
   it("resolves auto from the system", () => {
     expect(resolveTheme("auto", true)).toBe("mocha");
     expect(resolveTheme("auto", false)).toBe("latte");

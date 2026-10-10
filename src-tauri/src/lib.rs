@@ -11,6 +11,7 @@ mod lifecycle;
 mod logging;
 mod output;
 mod state;
+mod window;
 
 use clap::Parser;
 use tauri::Manager;
@@ -89,11 +90,13 @@ pub fn run() -> i32 {
         badge_renumber: eff.badge_renumber,
     };
 
+    let theme = eff.theme;
     let backups = output::Backups::new(output::Backups::default_dir());
     backups.purge_older_than(std::time::Duration::from_secs(24 * 3600));
 
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .setup(move |app| Ok(window::create_main(app, theme)?))
         .manage(app::AppState::new(launch, staged, backups, eff.copy_command.clone(), eff.hooks.clone()))
         .invoke_handler(tauri::generate_handler![
             app::take_launch_options,

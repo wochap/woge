@@ -14,6 +14,14 @@ function systemPrefersDark(): boolean {
   return typeof matchMedia === "function" ? matchMedia(DARK_QUERY).matches : true;
 }
 
+/** Sets the initial `data-theme` from the system unless the backend already forced one. */
+export function initDocumentTheme(root: HTMLElement = document.documentElement): Flavour {
+  if (root.dataset.theme !== "mocha" && root.dataset.theme !== "latte") {
+    root.dataset.theme = systemPrefersDark() ? "mocha" : "latte";
+  }
+  return root.dataset.theme as Flavour;
+}
+
 /** Applies `data-theme` on the root, following the system scheme live under `auto`. */
 export function useTheme(setting: ThemeSetting): Flavour {
   const [dark, setDark] = useState(systemPrefersDark);

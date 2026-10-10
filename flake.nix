@@ -23,7 +23,7 @@
       };
 
       devShells.${system}.default = pkgs.mkShell {
-        nativeBuildInputs = with pkgs; [ pkg-config nodejs cargo rustc rustfmt clippy cargo-tauri wl-clipboard imagemagick ];
+        nativeBuildInputs = with pkgs; [ pkg-config nodejs cargo rustc rustfmt clippy cargo-tauri wl-clipboard librsvg ];
         buildInputs = libs;
         GDK_BACKEND = "wayland";
         XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}";

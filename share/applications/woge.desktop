@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=woge
+GenericName=Image Editor
+Comment=Wayland screenshot and image editor
+Exec=woge %f
+Icon=woge
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;
+MimeType=image/png;image/jpeg;image/webp;image/gif;image/bmp;
+StartupWMClass=woge

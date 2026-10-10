@@ -48,7 +48,13 @@ rustPlatform.buildRustPackage {
   # Tests need a Wayland socket and run via `npm run test:rust` in the dev shell.
   doCheck = false;
 
-  postInstall = lib.optionalString withZshCompletion ''
+  postInstall = ''
+    for s in 16 32 48 64 128 256 512; do
+      install -Dm644 src-tauri/icons/''${s}x''${s}.png $out/share/icons/hicolor/''${s}x''${s}/apps/woge.png
+    done
+    install -Dm644 src-tauri/icons/icon.svg $out/share/icons/hicolor/scalable/apps/woge.svg
+    install -Dm644 share/applications/woge.desktop $out/share/applications/woge.desktop
+  '' + lib.optionalString withZshCompletion ''
     installShellCompletion --cmd woge --zsh src-tauri/completions/_woge
   '';
 
