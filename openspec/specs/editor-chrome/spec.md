@@ -69,11 +69,19 @@ With no document the canvas area SHALL show the empty state from board 1e: an im
 - **THEN** the empty state is shown, the toolbar tools are disabled and the options strip reads "No image yet · drop, paste or open one"
 
 ### Requirement: Shortcut overlay
-Pressing `?` SHALL open a dimmed overlay listing all shortcuts in three columns (Tools, Navigation, File & edit) generated from the keymap table. `?` or `Esc` SHALL close it. While open, other shortcuts SHALL be inert.
+Pressing `?` SHALL open a dimmed overlay listing all shortcuts in four columns (Tools, Navigation, Colour, File & edit) generated from the keymap table, per board 1f (1120px wide). The Colour column SHALL list "Border · text · stroke 1 … 0", "Fill · plate ⇧1 … ⇧0", "Border opacity −/+ 10% [ · ]" and "Fill opacity −/+ 10% { · }". A colour key row SHALL show each digit next to its swatch with the note "Hold ⇧ for fill / plate". When the window is narrower than the overlay, the overlay SHALL fit the window width with margins and lay out the columns in two per row. Its height SHALL be capped to the window with margins and its body SHALL scroll, so every shortcut is reachable at 640×520. `?` or `Esc` SHALL close it. While open, other shortcuts SHALL be inert.
 
 #### Scenario: Open and close
 - **WHEN** the user presses `?` then `Esc`
 - **THEN** the overlay appears then disappears and no other action fires
+
+#### Scenario: Colour column
+- **WHEN** the overlay is open
+- **THEN** a Colour column lists the colour and opacity keys, and Navigation lists Fit as Ctrl 0 and 100% as Ctrl 1
+
+#### Scenario: Minimum window
+- **WHEN** the overlay is opened in a 640×520 window
+- **THEN** it does not overflow the window, shows two columns per row, and scrolling reaches the last shortcut
 
 ### Requirement: Keyboard shortcuts are ignored in text fields
 Global shortcuts SHALL not fire while focus is in an input, textarea or contenteditable element.
@@ -174,3 +182,36 @@ Every options strip SHALL begin with the active tool or mode name (for example "
 #### Scenario: Mode label
 - **WHEN** resize mode is active
 - **THEN** the strip begins with the label "Resize"
+
+### Requirement: Colour and opacity shortcuts
+With a document loaded and no crop/resize mode active, the following keys SHALL act on the current strip context: the active drawing tool's default plus any selected objects of that type, or, with Select active, the selected objects.
+- `1`…`9`, `0` SHALL set the primary colour (border, text, stroke or badge colour) to red, peach, yellow, green, teal, blue, mauve, pink, white, black respectively.
+- `⇧1`…`⇧0` SHALL set the fill colour (rectangle, ellipse) or plate colour (text).
+- `[` / `]` SHALL lower / raise the primary opacity by 10%.
+- `{` / `}` (Shift+`[` / Shift+`]`) SHALL lower / raise the fill or plate opacity by 10%.
+
+Opacity steps SHALL snap to the nearest multiple of 10% in the step direction and clamp to 0–100%. Held keys SHALL repeat. `}` on an object with no fill or plate SHALL enable it with the auto-contrast colour (see shape-tools / text-tool). Keys SHALL be matched by physical key (`Digit1`…`Digit0`, `BracketLeft`, `BracketRight`) so they work on any layout. They SHALL do nothing for types that lack the property, and with Select active and nothing selected. Each key press on a selection SHALL be one history entry. The keys SHALL be ignored in text fields and while the text or badge editor is open.
+
+#### Scenario: Digit sets border
+- **WHEN** a rectangle is selected and the user presses `6`
+- **THEN** its border becomes blue in one history entry and the Rectangle default border becomes blue
+
+#### Scenario: Shift digit sets fill
+- **WHEN** Rectangle is active with nothing selected and the user presses `⇧3`
+- **THEN** the Rectangle tool's fill becomes yellow and the next rectangle drawn is yellow-filled
+
+#### Scenario: Opacity step snaps
+- **WHEN** a rectangle with fill opacity 25% is selected and the user presses `}`
+- **THEN** the fill opacity becomes 30%; pressing `{` twice then gives 10%
+
+#### Scenario: Clamp
+- **WHEN** an arrow at 100% opacity is selected and the user presses `]`
+- **THEN** the opacity stays 100% and no history entry is added
+
+#### Scenario: Fill key on arrow
+- **WHEN** only arrows are selected and the user presses `⇧2`
+- **THEN** nothing changes
+
+#### Scenario: Typing digits in text
+- **WHEN** the text editor is open and the user types `3`
+- **THEN** "3" is inserted and no colour changes

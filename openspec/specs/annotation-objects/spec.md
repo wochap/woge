@@ -80,3 +80,18 @@ With a selection the status line SHALL append `sel W × H` of the selection boun
 #### Scenario: Transformer with badge
 - **WHEN** only a badge is selected
 - **THEN** no resize handles are shown, only a selection outline
+
+### Requirement: Colour opacity is part of the object
+Rectangle, ellipse, arrow, text, brush and highlight objects SHALL store their primary colour opacity. Rectangle and ellipse SHALL also store a fill colour (or none) and a fill opacity. Text SHALL also store a plate colour (or none) and a plate opacity. Opacities SHALL be numbers in [0, 1]. They SHALL be part of the document snapshot, so they are undoable. They SHALL be carried by duplicate, the object clipboard and image rotation. They SHALL render identically on the canvas and in export. Badge and redact objects SHALL have no opacity fields. A style patch SHALL apply only the fields an object type supports: a fill patch SHALL be ignored by arrows, and a plate patch SHALL be ignored by shapes.
+
+#### Scenario: Export keeps opacity
+- **WHEN** a rectangle with a yellow fill at 40% is exported as PNG
+- **THEN** the exported pixels inside the rectangle are the image blended with yellow at 40%
+
+#### Scenario: Undo opacity change
+- **WHEN** the user changes a selected arrow's opacity to 30% and presses `Ctrl+Z`
+- **THEN** the arrow's opacity returns to its previous value
+
+#### Scenario: Mixed selection fill
+- **WHEN** a rectangle and an arrow are selected and the fill colour is set to blue
+- **THEN** the rectangle gets a blue fill and the arrow is unchanged

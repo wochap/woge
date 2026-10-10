@@ -43,11 +43,15 @@ Holding Space and dragging with the left button, or dragging with the middle but
 - **THEN** the view pans and the active tool is not invoked
 
 ### Requirement: Zoom commands and limits
-`Shift+1` SHALL fit, `Shift+0` SHALL set 100% keeping the view centre, `Ctrl+=` and `Ctrl+-` SHALL step zoom by ×1.25 around the canvas centre. Zoom SHALL be clamped to 5%–3200%. The zoom readout SHALL show the rounded percentage and the zoom menu SHALL expose Fit, 100%, Zoom in, Zoom out and the Checkerboard toggle.
+`Ctrl+0` SHALL fit, `Ctrl+1` SHALL set 100% keeping the view centre, `Ctrl+=` and `Ctrl+-` SHALL step zoom by ×1.25 around the canvas centre. `Shift+1` and `Shift+0` SHALL no longer change the zoom (they set the fill colour). Zoom SHALL be clamped to 5%–3200%. The zoom readout SHALL show the rounded percentage and the zoom menu SHALL expose Fit, 100%, Zoom in, Zoom out and the Checkerboard toggle. The webview's built-in Ctrl+0 zoom reset SHALL not fire.
 
 #### Scenario: Fit
-- **WHEN** the user presses `Shift+1` after zooming in
+- **WHEN** the user presses `Ctrl+0` after zooming in
 - **THEN** the view returns to the fitted state
+
+#### Scenario: Actual size
+- **WHEN** the user presses `Ctrl+1` at 50%
+- **THEN** the zoom becomes 100% around the view centre
 
 #### Scenario: Upper clamp
 - **WHEN** the user keeps zooming in
@@ -55,7 +59,7 @@ Holding Space and dragging with the left button, or dragging with the middle but
 
 #### Scenario: Zoom menu
 - **WHEN** the user clicks the zoom readout
-- **THEN** a menu opens with Fit (⇧1), 100% (⇧0), Zoom in (Ctrl +), Zoom out (Ctrl −), a divider and Checkerboard
+- **THEN** a menu opens with Fit (Ctrl 0), 100% (Ctrl 1), Zoom in (Ctrl +), Zoom out (Ctrl −), a divider and Checkerboard
 
 ### Requirement: Viewport follows window resizes
 When the canvas area changes size the view SHALL keep the same image point at the canvas centre, and SHALL re-fit if the view was in the fitted state and the user has not zoomed or panned since.
