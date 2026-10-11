@@ -1,6 +1,6 @@
 import { useCallback, useState, type MouseEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Copy, DownloadSimple, Minus, Plus, X } from "@phosphor-icons/react";
+import { Copy, DownloadSimple, Minus, Plus } from "@phosphor-icons/react";
 import { HISTORY } from "../tools/registry";
 import { zoomPercent } from "../lib/viewport";
 import { Tooltip } from "./Tooltip";
@@ -24,7 +24,6 @@ export interface TopBarProps {
   onZoomIn(): void;
   onZoomOut(): void;
   onToggleCheckerboard(): void;
-  onClose(): void;
   onCopy?(): void;
   onSave?(): void;
   onSaveAs?(): void;
@@ -145,12 +144,6 @@ export function TopBar(p: TopBarProps) {
               Save as…
             </button>
           )}
-        </Tooltip>
-        <div className="vdiv" />
-        <Tooltip label="Close" shortcut="Ctrl Q">
-          <button className="btn btn-ghost btn-icon" onClick={p.onClose}>
-            <X size={15} />
-          </button>
         </Tooltip>
       </div>
     </header>

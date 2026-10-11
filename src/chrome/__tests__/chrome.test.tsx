@@ -22,7 +22,6 @@ const base: TopBarProps = {
   onZoomIn: noop,
   onZoomOut: noop,
   onToggleCheckerboard: noop,
-  onClose: noop,
 };
 
 describe("TopBar", () => {
@@ -81,11 +80,9 @@ describe("TopBar", () => {
     expect(screen.getByRole("button", { name: "Undo" })).toBeInTheDocument();
   });
 
-  it("close calls onClose", () => {
-    const onClose = vi.fn();
-    render(<TopBar {...base} onClose={onClose} />);
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
-    expect(onClose).toHaveBeenCalled();
+  it("has no Close button", () => {
+    render(<TopBar {...base} />);
+    expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
   });
 });
 

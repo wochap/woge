@@ -255,7 +255,6 @@ export default function App() {
         onZoomIn={() => s.zoomStep(1)}
         onZoomOut={() => s.zoomStep(-1)}
         onToggleCheckerboard={() => s.setCheckerboard(!s.checkerboard)}
-        onClose={requestClose}
         onCopy={copyResult}
         onSave={() => save()}
         onSaveAs={() => saveAs()}
