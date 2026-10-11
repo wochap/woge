@@ -6,7 +6,7 @@ Resize mode: handle drags and numeric entry that set the non-destructive output 
 ## Requirements
 
 ### Requirement: Resize mode
-Pressing `S` or the Resize button SHALL enter resize mode: eight 10px handles on the draft bounds, a live `W × H` label with the original `W × H` greyed beside it, and an options strip with `W`, `H`, lock toggle, `%` field, "from W × H" and the hint "Opposite corner stays put · Shift unlock aspect · Enter apply". While the draft differs from the original size, the original bounds SHALL be drawn as a 1px dashed outline (`--overlay1`), and during a handle drag a "Fixed corner" pin label SHALL mark the corner, edge midpoint or centre that stays fixed, per board 1r. Enter applies, Esc cancels, both return to Select.
+Pressing `S` or the Resize button SHALL enter resize mode: eight 10px handles on the draft bounds, a live `W × H` label with the original `W × H` greyed beside it, and an options strip with `W`, `H`, lock toggle, `%` field, "from W × H" and the hint "Opposite corner stays put · Shift unlock aspect · Enter apply". While the draft differs from the original size, the original bounds SHALL be drawn as a 1px dashed outline (`--overlay1`), and during a handle drag a "Fixed corner" pin label SHALL mark the corner, edge midpoint or centre that stays fixed, per board 1r. Enter applies, Esc cancels, both return to Select. Choosing any other tool SHALL apply the resize and then activate that tool.
 
 #### Scenario: Enter
 - **WHEN** the user presses `S` on a 1920×1080 document
@@ -15,6 +15,14 @@ Pressing `S` or the Resize button SHALL enter resize mode: eight 10px handles on
 #### Scenario: Original outline and pin
 - **WHEN** the user drags the top-left handle of a 1920×1080 document to 1536×864
 - **THEN** a dashed outline shows the original 1920×1080 bounds and a "Fixed corner" pin marks the bottom-right corner
+
+#### Scenario: Switch tool applies the resize
+- **WHEN** the user sets the size to 1536×864 and clicks the Ellipse tool
+- **THEN** the document is resized to 1536×864 and Ellipse is the active tool
+
+#### Scenario: Crop to resize keeps the crop
+- **WHEN** the user draws a crop rect and presses `S`
+- **THEN** the crop is applied and resize mode opens on the cropped size
 
 ### Requirement: Dragging handles scales the output size
 Corner drags SHALL scale both dimensions around the opposite corner with aspect locked by default; Shift SHALL unlock; Alt SHALL scale around the centre. Edge drags SHALL change one dimension and, when locked, the other follows. The opposite corner or edge (or the centre with Alt) SHALL stay fixed on screen for the whole drag, whichever handle is used, and SHALL stay at the same screen position after the resize is applied unless the viewport is fitted, in which case the result is refitted. The anchor is view-only: the document stores only the output size. Dimensions SHALL be integers between 1 and 16384.

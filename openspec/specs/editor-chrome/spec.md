@@ -226,3 +226,18 @@ The application SHALL suppress the webview's native context menu everywhere in t
 #### Scenario: Right click
 - **WHEN** the user presses the secondary mouse button anywhere in the window
 - **THEN** no context menu appears
+
+### Requirement: Tool switching keeps work in progress
+Every toolbar tool and its shortcut SHALL stay selectable while Crop or Resize mode is active. Choosing a tool other than the active mode's SHALL apply the mode's draft first, including Rotate. Choosing the active mode's own tool SHALL do nothing. Switching tools SHALL keep an object being created, and an open text or badge editor SHALL commit its value. A switch requested during a pointer drag SHALL be ignored. Esc SHALL still cancel the mode, and Undo/Redo SHALL still cancel it.
+
+#### Scenario: Switch out of a mode
+- **WHEN** Resize mode is active with a changed size and the user presses `V`
+- **THEN** the resize is applied and the Select tool is active
+
+#### Scenario: Rotate during a mode
+- **WHEN** Crop mode has a changed rect and the user clicks Rotate
+- **THEN** the crop is applied, then the image rotates, as two history entries
+
+#### Scenario: Text editor on tool switch
+- **WHEN** the user types text and clicks another tool
+- **THEN** the text object is created with the typed value

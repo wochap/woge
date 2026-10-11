@@ -6,7 +6,7 @@ Interactive crop mode: drawing, moving and resizing the crop rect, aspect preset
 ## Requirements
 
 ### Requirement: Entering and leaving crop mode
-Pressing `C` or the Crop button SHALL enter crop mode: object selection is hidden, the options strip shows Free/1:1/4:3/16:9 presets, the live `W × H` readout and the hint "Shift: square · Enter apply · Esc cancel". Enter SHALL apply, Esc SHALL cancel, both returning to the Select tool.
+Pressing `C` or the Crop button SHALL enter crop mode: object selection is hidden, the options strip shows Free/1:1/4:3/16:9 presets, the live `W × H` readout and the hint "Shift: square · Enter apply · Esc cancel". Enter SHALL apply, Esc SHALL cancel, both returning to the Select tool. Choosing any other tool SHALL apply the crop and then activate that tool. A crop that leaves the crop rect unchanged SHALL NOT add a history entry.
 
 #### Scenario: Enter mode with an existing crop
 - **WHEN** the document already has a crop smaller than the image and the user presses `C`
@@ -15,6 +15,18 @@ Pressing `C` or the Crop button SHALL enter crop mode: object selection is hidde
 #### Scenario: Cancel
 - **WHEN** the user changes the rect and presses Esc
 - **THEN** the previous crop is kept and the tool returns to Select
+
+#### Scenario: Switch tool applies the crop
+- **WHEN** the user draws a crop rect and clicks the Rectangle tool
+- **THEN** the crop is applied and Rectangle is the active tool
+
+#### Scenario: Unchanged crop adds no history
+- **WHEN** the document has a partial crop, the user presses `C` and then chooses another tool without editing the rect
+- **THEN** no history entry is added
+
+#### Scenario: Switch ignored during drag
+- **WHEN** a tool shortcut is pressed while a crop handle drag is in progress
+- **THEN** nothing happens and crop mode stays active
 
 ### Requirement: Drawing, moving and resizing the crop rect
 Dragging on empty canvas SHALL draw a new rect. Dragging inside the rect SHALL move it. Eight 10px handles SHALL resize it: corners on both axes, edges on one. The rect SHALL be clamped to the image bounds, at least 1×1, with integer coordinates on commit.
