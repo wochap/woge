@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { useEditor } from "../../store/editor";
 import { applyCrop, formatCropStatus } from "../crop/math";
 import { applyResize, percentOf, setHeight, setPercent, setWidth } from "../resize/math";
-import { cancelMode, confirmMode, enterMode, nudge, setCropPreset } from "../mode";
+import { cancelMode, confirmMode, enterMode, nudge, setCropPreset, switchTool } from "../mode";
 import { newDocument } from "../../model/document";
 import { canUndo } from "../../store/history";
 
@@ -103,5 +103,63 @@ describe("modes", () => {
     useEditor.getState().rotate("cw");
     useEditor.getState().loadImage(bitmap, src);
     expect(canUndo(useEditor.getState().history)).toBe(false);
+  });
+
+  describe("switchTool", () => {
+    const past = () => useEditor.getState().history!.past.length;
+
+    it("crop → resize commits the crop and seeds resize from it", () => {
+      enterMode("crop");
+      useEditor.setState({ cropDraft: { x: 240, y: 120, w: 1240, h: 720 } });
+      switchTool("resize");
+      const s = useEditor.getState();
+      expect(s.document!.crop).toEqual({ x: 240, y: 120, w: 1240, h: 720 });
+      expect(s.mode).toBe("resize");
+      expect(s.resizeDraft).toEqual({ x: 0, y: 0, w: 1240, h: 720 });
+      expect(past()).toBe(1);
+    });
+
+    it("resize → crop commits the resize", () => {
+      enterMode("resize");
+      useEditor.setState({ resizeDraft: { x: 0, y: 0, w: 960, h: 540 } });
+      switchTool("crop");
+      const s = useEditor.getState();
+      expect(s.document!.size).toEqual({ w: 960, h: 540 });
+      expect(s.mode).toBe("crop");
+      expect(past()).toBe(1);
+    });
+
+    it("untouched partial crop adds no history entry", () => {
+      enterMode("crop");
+      useEditor.setState({ cropDraft: { x: 240, y: 120, w: 1240, h: 720 } });
+      confirmMode();
+      const before = past();
+      enterMode("crop");
+      switchTool("rect");
+      const s = useEditor.getState();
+      expect(past()).toBe(before);
+      expect(s.mode).toBe("none");
+      expect(s.activeTool).toBe("rect");
+    });
+
+    it("is ignored while pointerDrag is set", () => {
+      enterMode("crop");
+      useEditor.setState({ cropDraft: { x: 1, y: 1, w: 10, h: 10 }, pointerDrag: true });
+      switchTool("rect");
+      const s = useEditor.getState();
+      expect(s.mode).toBe("crop");
+      expect(past()).toBe(0);
+      useEditor.setState({ pointerDrag: false });
+    });
+
+    it("rotate during a mode commits then rotates", () => {
+      enterMode("resize");
+      useEditor.setState({ resizeDraft: { x: 0, y: 0, w: 960, h: 540 } });
+      switchTool("rotate");
+      const s = useEditor.getState();
+      expect(s.mode).toBe("none");
+      expect(past()).toBe(2);
+      expect(s.document!.size).toEqual({ w: 540, h: 960 });
+    });
   });
 });

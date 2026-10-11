@@ -1,4 +1,5 @@
 import { useEditor, type Mode } from "../store/editor";
+import type { ToolId } from "./registry";
 import { clampMove, fitAspect, clampSide } from "../model/geometry";
 import { rotatedDims } from "../model/document";
 import { applyCrop, presetRatio } from "./crop/math";
@@ -6,13 +7,13 @@ import { applyResize, originalSize, panForDraft, setHeight, setWidth } from "./r
 
 const store = useEditor.getState;
 
-/** Enter crop or resize mode; switching from another mode cancels it first. */
+/** Enter crop or resize mode; switching from another mode commits it first. */
 export function enterMode(mode: Exclude<Mode, "none">) {
   const s = store();
   const doc = s.document;
   if (!doc) return;
   if (s.mode === mode) return;
-  if (s.mode !== "none") cancelMode();
+  if (s.mode !== "none") confirmMode();
   if (mode === "crop") {
     const full = rotatedDims(doc);
     const partial = doc.crop.w < full.w || doc.crop.h < full.h;
@@ -51,7 +52,17 @@ export function confirmMode() {
   if (s.mode === "crop") {
     const rect = s.cropDraft;
     leave(false);
-    if (rect) store().commit(applyCrop(doc, rect));
+    if (rect) {
+      const next = applyCrop(doc, rect);
+      const same =
+        next.crop.x === doc.crop.x &&
+        next.crop.y === doc.crop.y &&
+        next.crop.w === doc.crop.w &&
+        next.crop.h === doc.crop.h &&
+        next.size.w === doc.size.w &&
+        next.size.h === doc.size.h;
+      if (!same) store().commit(next);
+    }
     store().fit();
   } else if (s.mode === "resize") {
     const draft = s.resizeDraft;
@@ -62,6 +73,17 @@ export function confirmMode() {
     if (fitted) store().fit();
     else if (draft && (draft.x || draft.y)) store().setViewport(panForDraft(s.viewport, draft));
   }
+}
+
+/** Pick a tool; an active crop/resize draft is committed first. */
+export function switchTool(tool: ToolId, shift = false) {
+  const s = store();
+  if (!s.document || s.pointerDrag) return;
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  if (s.mode !== "none" && s.mode !== tool) confirmMode();
+  if (tool === "crop" || tool === "resize") enterMode(tool);
+  else if (tool === "rotate") store().rotate(shift ? "ccw" : "cw");
+  else store().setActiveTool(tool);
 }
 
 export function cancelMode() {

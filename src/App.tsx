@@ -28,7 +28,7 @@ import { useInputs } from "./useInputs";
 import { canRedo, canUndo } from "./store/history";
 import { visibleSize } from "./model/document";
 import type { ToolId } from "./tools/registry";
-import { cancelMode, confirmMode, enterMode, nudge } from "./tools/mode";
+import { cancelMode, confirmMode, nudge, switchTool } from "./tools/mode";
 import { CropStrip } from "./tools/crop/CropStrip";
 import { ResizeStrip } from "./tools/resize/ResizeStrip";
 import { formatCropStatus } from "./tools/crop/math";
@@ -97,13 +97,7 @@ export default function App() {
   }, []);
 
   const inMode = s.mode !== "none";
-  const selectTool = (tool: ToolId, e: { shiftKey: boolean }) => {
-    if (!s.document) return;
-    if (tool === "crop" || tool === "resize") enterMode(tool);
-    else if (inMode) return;
-    else if (tool === "rotate") s.rotate(e.shiftKey ? "ccw" : "cw");
-    else s.setActiveTool(tool);
-  };
+  const selectTool = (tool: ToolId, e: { shiftKey: boolean }) => switchTool(tool, e.shiftKey);
   const undo = () => {
     cancelMode();
     useEditor.getState().undo();
