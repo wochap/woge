@@ -40,7 +40,7 @@ The window SHALL be composed of a top bar (`--topbar-h`) spanning the full width
 - **THEN** the canvas extends to the bottom edge
 
 ### Requirement: Top bar contents and behaviour
-The top bar SHALL show, left to right: file name (or "woge" when empty, "stdin" or "clipboard" for byte inputs) and `W × H` in the mono font; a centred zoom readout that opens the zoom menu; Copy (primary), Save, Save as… buttons and a close control on the right. The whole bar except its buttons SHALL act as a window drag region. Copy, Save and Save as SHALL be rendered disabled in this change.
+The top bar SHALL show, left to right: file name (or "woge" when empty, "stdin" or "clipboard" for byte inputs) and `W × H` in the mono font; a centred zoom readout that opens the zoom menu; Copy (primary), Save, Save as… buttons on the right. The top bar SHALL NOT show a close control; closing the window is left to the window manager and `Ctrl+Q`. The whole bar except its buttons SHALL act as a window drag region. Copy, Save and Save as SHALL be rendered disabled in this change.
 
 #### Scenario: Drag the window
 - **WHEN** the user presses on empty top bar space and drags
@@ -49,6 +49,10 @@ The top bar SHALL show, left to right: file name (or "woge" when empty, "stdin" 
 #### Scenario: Disabled actions
 - **WHEN** an image is loaded
 - **THEN** Copy, Save and Save as are visible, disabled, with tooltips naming their shortcuts
+
+#### Scenario: No close control
+- **WHEN** the top bar is rendered
+- **THEN** no Close button is present
 
 ### Requirement: Toolbar lists every tool with shortcut tooltips
 The toolbar SHALL show, in order with dividers: Select (V), Crop (C), Resize (S), Rotate (L, Shift+L reverse) | Rectangle (R), Ellipse (O), Arrow (A), Text (T), Brush (B), Highlighter (H), Redact (X), Counter badge (N) | Undo (Ctrl+Z), Redo (Ctrl+Shift+Z). Icons are Phosphor regular at `--toolbar-icon`. Tools not yet implemented SHALL be disabled; Select SHALL be active by default. Hovering or focusing a button SHALL show a tooltip with the name and a kbd chip.
@@ -215,3 +219,10 @@ Opacity steps SHALL snap to the nearest multiple of 10% in the step direction an
 #### Scenario: Typing digits in text
 - **WHEN** the text editor is open and the user types `3`
 - **THEN** "3" is inserted and no colour changes
+
+### Requirement: Native context menu is suppressed
+The application SHALL suppress the webview's native context menu everywhere in the window.
+
+#### Scenario: Right click
+- **WHEN** the user presses the secondary mouse button anywhere in the window
+- **THEN** no context menu appears

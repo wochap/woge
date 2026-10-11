@@ -72,8 +72,8 @@ The application SHALL use the Transformer mark from design board 2d as its icon,
 ### Requirement: Exit codes are stable
 The process SHALL exit 0 when the user closes the editor normally, 1 when an operation was cancelled (reserved for later changes), and 2 on startup errors.
 
-#### Scenario: Close from the top bar
-- **WHEN** the user activates the close control or presses `Ctrl+Q`
+#### Scenario: Close with Ctrl+Q or the window manager
+- **WHEN** the user presses `Ctrl+Q` or the window manager requests close
 - **THEN** the process exits with status 0
 
 #### Scenario: Startup failure
