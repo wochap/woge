@@ -9,6 +9,13 @@ import { afterCreate, startNewText } from "../text/editing";
 import { startFreehand } from "../freehand/useFreehandTool";
 import { placeBadge } from "../badge/editing";
 
+/** The mousedown that follows this pointerdown would otherwise move focus off the new editor. */
+function keepFocusOnNextMouseDown() {
+  const stop = (ev: MouseEvent) => ev.preventDefault();
+  window.addEventListener("mousedown", stop, { once: true, capture: true });
+  setTimeout(() => window.removeEventListener("mousedown", stop, { capture: true }), 300);
+}
+
 /** Stage pointer down for drawing tools: press-drag-release creates one object. */
 export function useShapeTool() {
   return useCallback((e: Konva.KonvaEventObject<PointerEvent>) => {
@@ -19,6 +26,7 @@ export function useShapeTool() {
     if (tool === "text") {
       if (s.editingText) return;
       startNewText(docPoint(stage, e.evt.clientX, e.evt.clientY));
+      keepFocusOnNextMouseDown();
       return;
     }
     if (tool === "brush") return startFreehand(e, "brush");

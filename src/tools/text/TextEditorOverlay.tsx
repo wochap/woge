@@ -14,14 +14,19 @@ export function TextEditorOverlay() {
   const flavour = useFlavour();
   const ref = useRef<HTMLTextAreaElement>(null);
   const done = useRef(false);
+  const settling = useRef(false);
   const obj = editing ? editedText() : null;
 
   useEffect(() => {
     done.current = false;
     const el = ref.current;
     if (!el) return;
+    // A blur in the frame the editor opens is focus theft from the creating press, not a click-away.
+    settling.current = true;
+    const frame = requestAnimationFrame(() => (settling.current = false));
     el.focus();
     el.setSelectionRange(el.value.length, el.value.length);
+    return () => cancelAnimationFrame(frame);
   }, [editing]);
 
   useEffect(() => {
@@ -57,7 +62,10 @@ export function TextEditorOverlay() {
       defaultValue={obj.text}
       spellCheck={false}
       onInput={grow}
-      onBlur={() => finish(true)}
+      onBlur={() => {
+        if (settling.current) ref.current?.focus();
+        else finish(true);
+      }}
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === "Escape") {
