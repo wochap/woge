@@ -32,7 +32,7 @@ rustPlatform.buildRustPackage {
   npmDeps = fetchNpmDeps {
     name = "woge-npm-deps";
     src = ../.;
-    hash = "sha256-Jm9CuP78SriWAqAUX6q5RrD9mVrE9+S3WuXVw1lsNYM=";
+    hash = "sha256-AMJjPz3bayfcp+qzpq6LHwnw8Vx105p6lB7GYozPr1c=";
   };
 
   nativeBuildInputs = [
