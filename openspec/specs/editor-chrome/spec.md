@@ -241,3 +241,70 @@ Every toolbar tool and its shortcut SHALL stay selectable while Crop or Resize m
 #### Scenario: Text editor on tool switch
 - **WHEN** the user types text and clicks another tool
 - **THEN** the text object is created with the typed value
+
+### Requirement: Colour shortcuts drive the strip target
+The Border/Fill (or Text/Plate) target selected in the options strip SHALL be shared state, not local to the strip. A primary colour or opacity key (`1`…`0`, `[`, `]`) SHALL switch the target to the primary role, and a fill key (`⇧1`…`⇧0`, `{`, `}`) SHALL switch it to the secondary role, before applying, so the swatches, chips and opacity slider always show the value the key changed. A key SHALL NOT switch the target when none of the strip's types has that role. The target SHALL reset to the primary role when the active tool or the kind of the selection changes.
+
+#### Scenario: Fill key while Border is shown
+- **WHEN** a rectangle is selected, the Border chip is active and the user presses `⇧3`
+- **THEN** the Fill chip becomes active, the swatches show yellow selected, and the fill is yellow
+
+#### Scenario: Opacity key follows the role
+- **WHEN** a rectangle with a fill is selected, the Border chip is active and the user presses `}`
+- **THEN** the Fill chip becomes active and the opacity slider shows the new fill opacity
+
+#### Scenario: Role missing
+- **WHEN** only arrows are selected and the user presses `{`
+- **THEN** nothing changes and the strip is unchanged
+
+#### Scenario: Reset on kind change
+- **WHEN** the Fill chip is active and the user selects a text object
+- **THEN** the Text chip (primary) is active
+
+### Requirement: Width shortcuts
+With a document loaded and no crop/resize mode active, `Alt+S`, `Alt+M` and `Alt+L` SHALL set width (or badge size) S, M and L on the current strip context: the active tool's default plus any selected objects of that type, or, with Select active, the selected objects. They SHALL apply to rectangle, ellipse, arrow, brush, highlight and badge, and to a mixed selection of the types that have a width, and SHALL do nothing for other types. Keys SHALL be matched by physical key so they work on any layout. Each press on a selection SHALL be one history entry and none when nothing changes. Held keys SHALL NOT repeat. The keys SHALL be ignored in text fields and while the text or badge editor is open. Plain `S` and `L` SHALL keep selecting Resize and Rotate.
+
+#### Scenario: Set width on selection
+- **WHEN** a rectangle with width S is selected and the user presses `Alt+L`
+- **THEN** its width becomes L in one history entry and the Rectangle default width becomes L
+
+#### Scenario: Tool default
+- **WHEN** Brush is active with nothing selected and the user presses `Alt+S`
+- **THEN** the Brush default width becomes S and the next stroke is 2px (scaled)
+
+#### Scenario: Badge size
+- **WHEN** a counter badge is selected and the user presses `Alt+M`
+- **THEN** its size becomes M
+
+#### Scenario: Unsupported type
+- **WHEN** only text objects are selected and the user presses `Alt+M`
+- **THEN** nothing changes
+
+### Requirement: Shortcut overlay lists width keys
+The shortcut overlay SHALL list "Width S · M · L" as `Alt S · M · L` in the Colour column.
+
+#### Scenario: Overlay row
+- **WHEN** the overlay is open
+- **THEN** the Colour column shows a Width row with `Alt S · M · L`
+
+### Requirement: Handles have generous hit areas
+Selection transformer anchors, arrow endpoint handles and the crop and resize handles SHALL be grabbable within at least 20 screen px of their centre, while their drawn size stays unchanged (8px transformer and arrow, 10px crop and resize). The hit size SHALL stay constant in screen pixels at every zoom level. The resize and move cursors SHALL appear over the whole hit area.
+
+#### Scenario: Grab beside an anchor
+- **WHEN** an object is selected and the user presses 8px away from a corner anchor's centre
+- **THEN** a resize drag starts from that corner
+
+#### Scenario: Zoomed out
+- **WHEN** the viewport is zoomed to 25% and the user presses 9px from a crop handle's centre
+- **THEN** the handle is grabbed
+
+### Requirement: Drawing tools show a crosshair cursor
+While Rectangle, Ellipse, Arrow, Brush, Highlighter, Redact or Counter badge is active, the pointer over the canvas SHALL be a crosshair. Text SHALL keep its text cursor and Select its normal cursors. Panning cursors and handle cursors SHALL still take precedence.
+
+#### Scenario: Brush active
+- **WHEN** the user switches to Brush and moves over the canvas
+- **THEN** the cursor is a crosshair
+
+#### Scenario: Back to Select
+- **WHEN** the user presses `V`
+- **THEN** the cursor returns to the default
