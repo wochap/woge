@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Stage } from "./canvas/Stage";
 import { EmptyState } from "./chrome/EmptyState";
@@ -60,7 +61,8 @@ export default function App() {
   useTheme(themeSetting);
   const compact = useCompact();
 
-  const s = useEditor();
+  // pointer is excluded: it changes on every pointermove and only the status line reads it.
+  const s = useEditor(useShallow(({ pointer: _pointer, ...rest }) => rest));
   const onLaunch = useCallback((opts: LaunchOptions) => {
     setThemeSetting(opts.theme);
     useEditor.getState().setStatusLine(opts.statusLine);
@@ -278,7 +280,7 @@ export default function App() {
         {!doc && <EmptyState dropActive={dropActive} />}
         {doc && dropActive && <div className="drop-outline" />}
       </Stage>
-      {s.statusLine && <StatusLine pointer={s.pointer} detail={statusDetail} />}
+      {s.statusLine && <StatusLine detail={statusDetail} />}
       <Toast toast={s.toast} onDismiss={s.dismissToast} />
       {overlayOpen && <ShortcutOverlay onClose={() => setOverlayOpen(false)} />}
       {closeDialog && (

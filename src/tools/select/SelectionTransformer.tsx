@@ -123,7 +123,9 @@ export function SelectionTransformer() {
       : [];
     tr.nodes(nodes);
     tr.getLayer()?.batchDraw();
-  });
+    // objs is derived from selection and doc.objects, so those stand in for it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selection, doc?.objects, active]);
 
   const onTransform = () => ref.current?.nodes().forEach(liveFold);
   const onTransformEnd = () => {
