@@ -6,6 +6,8 @@ import { clampTextSize, measuredText, type AnnotationObject } from "../../model/
 import { cssVar } from "../../canvas/useHandles";
 
 export const ANCHOR_PX = 8;
+/** Minimum grab size in screen px; anchors are unscaled, so the hit stroke is constant. */
+export const ANCHOR_HIT_PX = 20;
 const ALL = [
   "top-left",
   "top-right",
@@ -153,6 +155,7 @@ export function SelectionTransformer() {
       anchorStroke={accent}
       anchorFill={bg}
       anchorCornerRadius={1}
+      anchorStyleFunc={(anchor) => anchor.hitStrokeWidth(ANCHOR_HIT_PX - ANCHOR_PX)}
       borderStroke={accent}
       borderStrokeWidth={1}
       onTransform={onTransform}

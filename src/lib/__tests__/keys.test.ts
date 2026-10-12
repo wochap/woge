@@ -25,6 +25,18 @@ describe("keymap", () => {
     expect(matchBinding("shift+1", "!")?.id).not.toBe("view.fit");
   });
 
+  it("matches width keys by physical key; plain s/l stay tools", () => {
+    const m = (init: KeyboardEventInit & { key: string }) => {
+      const e = key(init);
+      return matchBinding(comboOf(e), e.key)?.id;
+    };
+    expect(m({ key: "ß", code: "KeyS", altKey: true })).toBe("width.set");
+    expect(m({ key: "m", code: "KeyM", altKey: true })).toBe("width.set");
+    expect(m({ key: "¬", code: "KeyL", altKey: true })).toBe("width.set");
+    expect(m({ key: "s", code: "KeyS" })).toBe("tool.resize");
+    expect(m({ key: "l", code: "KeyL" })).toBe("tool.rotate");
+  });
+
   it("matches modifiers exactly", () => {
     expect(matchBinding("ctrl+o", "o")?.id).toBe("file.open");
     expect(matchBinding("o", "o")?.id).toBe("tool.ellipse");

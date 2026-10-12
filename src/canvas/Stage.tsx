@@ -21,6 +21,8 @@ import { ResizeOverlay } from "../tools/resize/ResizeOverlay";
 import { FloatingConfirm } from "../chrome/FloatingConfirm";
 import { cancelMode, confirmMode } from "../tools/mode";
 
+const DRAW_TOOLS = ["rect", "ellipse", "arrow", "brush", "highlighter", "redact", "counter"];
+
 Konva.pixelRatio = window.devicePixelRatio || 1;
 Konva.dragDistance = 3;
 
@@ -83,18 +85,15 @@ export function Stage({ checkerboard, children }: Props) {
   if (doc && mode === "crop") {
     const full = rotatedDims(doc);
     shown = { ...doc, crop: { x: 0, y: 0, ...full }, size: full };
-  } else if (doc && mode === "resize" && resizeDraft) shown = { ...doc, size: { w: resizeDraft.w, h: resizeDraft.h } };
+  } else if (doc && mode === "resize" && resizeDraft)
+    shown = { ...doc, size: { w: resizeDraft.w, h: resizeDraft.h } };
   // Resize previews the draft at its offset so the dragged handle's opposite side stays put.
   const resizeOffset =
     mode === "resize" && resizeDraft ? { x: resizeDraft.x, y: resizeDraft.y } : { x: 0, y: 0 };
   const docScale = shown ? shown.size.w / shown.crop.w : 1;
 
   const anchor =
-    mode === "crop"
-      ? cropDraft
-      : mode === "resize" && resizeDraft
-        ? resizeDraft
-        : null;
+    mode === "crop" ? cropDraft : mode === "resize" && resizeDraft ? resizeDraft : null;
   let anchorScreen = null;
   if (anchor) {
     const a = imageToScreen(view, anchor);
@@ -104,6 +103,7 @@ export function Stage({ checkerboard, children }: Props) {
   const cls = [
     "canvas-area",
     checkerboard && "checker",
+    doc && DRAW_TOOLS.includes(tool) && "tool-draw",
     panning ? "panning" : panReady && doc && "pan-ready",
   ]
     .filter(Boolean)

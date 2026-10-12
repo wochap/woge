@@ -11,6 +11,7 @@ import {
   type Size,
   type View,
 } from "../lib/viewport";
+import type { ColorRole } from "../model/roles";
 import type { ToolId } from "../tools/registry";
 import {
   newDocument,
@@ -75,6 +76,8 @@ interface EditorState {
   fitted: boolean;
   canvasSize: Size;
   activeTool: ToolId;
+  /** Border/Fill (Text/Plate) target shown in the strip; transient UI state. */
+  colourRole: ColorRole;
   loading: Loading | null;
   toast: ToastMessage | null;
   pointer: Point | null;
@@ -114,6 +117,7 @@ interface EditorState {
   zoomBy(factor: number, aroundScreenPoint?: Point): void;
   zoomStep(dir: 1 | -1): void;
   setActiveTool(tool: ToolId): void;
+  setColourRole(role: ColorRole): void;
   setLoading(loading: Loading | null): void;
   showToast(text: string, kind?: ToastMessage["kind"], action?: ToastMessage["action"]): void;
   dismissToast(id: number): void;
@@ -189,6 +193,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   fitted: true,
   canvasSize: { width: 0, height: 0 },
   activeTool: "select",
+  colourRole: "primary",
   loading: null,
   toast: null,
   pointer: null,
@@ -318,7 +323,10 @@ export const useEditor = create<EditorState>((set, get) => ({
     get().zoomBy(dir > 0 ? ZOOM_STEP : 1 / ZOOM_STEP);
   },
   setActiveTool(tool) {
-    set({ activeTool: tool });
+    set({ activeTool: tool, colourRole: "primary" });
+  },
+  setColourRole(colourRole) {
+    set({ colourRole });
   },
   setLoading(loading) {
     set({ loading });

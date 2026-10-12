@@ -137,6 +137,7 @@ describe("ShortcutOverlay", () => {
     render(<ShortcutOverlay onClose={() => {}} />);
     expect(screen.getByText("Colour")).toBeInTheDocument();
     expect(screen.getByText("⇧1 … ⇧0")).toBeInTheDocument();
+    expect(screen.getByText("Alt S · M · L")).toBeInTheDocument();
     expect(screen.getByText("Ctrl 0")).toBeInTheDocument();
     expect(screen.getByText("Hold ⇧ for fill / plate")).toBeInTheDocument();
   });

@@ -36,7 +36,14 @@ import { formatCropStatus } from "./tools/crop/math";
 import { originalSize, percentOf } from "./tools/resize/math";
 import { useSettings } from "./store/settings";
 import { useAnnotationStrip } from "./chrome/strips/AnnotationStrip";
-import { setColour, stepOpacity, stripContext } from "./chrome/strips/apply";
+import {
+  applyStyle,
+  roleTypes,
+  setColour,
+  stepOpacity,
+  stripContext,
+  type StripContext,
+} from "./chrome/strips/apply";
 import { SWATCHES } from "./model/palette";
 import type { ColorRole } from "./model/roles";
 import { stepTextSize } from "./chrome/strips/TextStrip";
@@ -48,7 +55,9 @@ import {
 } from "./tools/select/useSelectTool";
 import { openTextEditor } from "./tools/text/editing";
 import { openBadgeEditor } from "./tools/badge/editing";
-import { boundsOf } from "./model/objects";
+import { boundsOf, type ObjectType } from "./model/objects";
+
+const WIDTH_KEY_TYPES: ObjectType[] = ["rect", "ellipse", "arrow", "brush", "highlight", "badge"];
 
 /** Ctrl+C copies objects when any are selected, the image otherwise. */
 function hasSelection(): boolean {
@@ -120,11 +129,32 @@ export default function App() {
   const colourKey = (role: ColorRole) => (e: KeyboardEvent) => {
     const ctx = colourCtx();
     const digit = Number(comboOf(e).slice(-1));
-    if (ctx) setColour(ctx, role, SWATCHES[(digit + 9) % 10]);
+    if (!ctx) return;
+    followRole(ctx, role);
+    setColour(ctx, role, SWATCHES[(digit + 9) % 10]);
   };
   const opacityKey = (role: ColorRole) => (e: KeyboardEvent) => {
     const ctx = colourCtx();
-    if (ctx) stepOpacity(ctx, role, comboOf(e).endsWith("]") ? 1 : -1);
+    if (!ctx) return;
+    followRole(ctx, role);
+    stepOpacity(ctx, role, comboOf(e).endsWith("]") ? 1 : -1);
+  };
+  /** Show the role a key edits in the strip, unless no type in the context has it. */
+  const followRole = (ctx: StripContext, role: ColorRole) => {
+    if (roleTypes(ctx, role).length) useEditor.getState().setColourRole(role);
+  };
+  const widthKey = (e: KeyboardEvent) => {
+    const ctx = colourCtx();
+    if (!ctx || !ctx.types.every((t) => WIDTH_KEY_TYPES.includes(t))) return;
+    const v = e.code === "KeyS" ? "S" : e.code === "KeyM" ? "M" : "L";
+    const part = (badge: boolean): StripContext => ({
+      ...ctx,
+      types: ctx.types.filter((t) => (t === "badge") === badge),
+      targets: ctx.targets.filter((o) => (o.type === "badge") === badge),
+    });
+    const [badges, shapes] = [part(true), part(false)];
+    if (shapes.types.length) applyStyle(shapes, { strokeWidth: v });
+    if (badges.types.length) applyStyle(badges, { size: v });
   };
   const handlers: KeyHandlers = {
     "tool.select": (e) => selectTool("select", e),
@@ -185,6 +215,7 @@ export default function App() {
     "colour.fill": colourKey("secondary"),
     "opacity.primary": opacityKey("primary"),
     "opacity.fill": opacityKey("secondary"),
+    "width.set": widthKey,
     "view.fit": s.fit,
     "view.actual": s.actualSize,
     "view.zoomIn": () => s.zoomStep(1),

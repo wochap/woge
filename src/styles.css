@@ -532,6 +532,9 @@ kbd {
     8px -8px,
     -8px 0;
 }
+.canvas-area.tool-draw {
+  cursor: crosshair;
+}
 .canvas-area.pan-ready {
   cursor: grab;
 }

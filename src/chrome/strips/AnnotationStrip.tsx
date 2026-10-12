@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useEditor } from "../../store/editor";
 import { useSettings } from "../../store/settings";
 import { stripContext, type StripContext } from "./apply";
@@ -14,8 +15,10 @@ export function useAnnotationStrip() {
   const selection = useEditor((s) => s.selection);
   const objects = useEditor((s) => s.document?.objects ?? null);
   useSettings((s) => s.tools);
-  if (!objects) return null;
-  const ctx = stripContext(tool, selection, objects);
+  const ctx = objects ? stripContext(tool, selection, objects) : null;
+  const kind = ctx?.kind;
+  // The Border/Fill target resets to primary whenever the strip kind changes.
+  useEffect(() => useEditor.getState().setColourRole("primary"), [kind]);
   if (!ctx) return null;
   return <KindStrip key={ctx.kind} ctx={ctx} />;
 }

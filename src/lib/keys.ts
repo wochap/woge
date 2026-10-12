@@ -96,6 +96,8 @@ export const KEYMAP: KeyBinding[] = [
   b("opacity.primary", "Border opacity −/+ 10%", "colour", "[ · ]", ["[", "]"], true),
   b("opacity.fill", "Fill opacity −/+ 10%", "colour", "{ · }", ["shift+[", "shift+]"], true),
 
+  b("width.set", "Width S · M · L", "colour", "Alt S · M · L", ["alt+s", "alt+m", "alt+l"], true),
+
   b("file.open", "Open", "file", "Ctrl O", ["ctrl+o"], true),
   b("file.paste", "Paste", "file", "Ctrl V", ["ctrl+v"], true),
   b("file.copy", "Copy result / objects", "file", "Ctrl C", ["ctrl+c"], true),
@@ -145,6 +147,8 @@ export function comboOf(
   if (/^Digit\d$/.test(e.code)) key = e.code.slice(5);
   else if (e.code === "BracketLeft") key = "[";
   else if (e.code === "BracketRight") key = "]";
+  // Alt rewrites the glyph on some layouts; match the width keys physically.
+  if (e.altKey && /^Key[SML]$/.test(e.code)) key = e.code.slice(3).toLowerCase();
   const parts: string[] = [];
   if (e.ctrlKey || e.metaKey) parts.push("ctrl");
   if (e.shiftKey) parts.push("shift");

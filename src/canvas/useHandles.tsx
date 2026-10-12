@@ -14,6 +14,8 @@ export interface DragInfo {
 }
 
 export const HANDLE_PX = 10;
+/** Grab size in screen px; the drawn handle stays `HANDLE_PX`. */
+export const HANDLE_HIT_PX = 20;
 
 export const CURSORS: Record<Handle, string> = {
   nw: "nwse-resize",
@@ -109,6 +111,7 @@ export function Handles({ rect, scale, onDown }: HandlesProps) {
             fill={fill}
             stroke={rim}
             strokeWidth={1 / scale}
+            hitStrokeWidth={(HANDLE_HIT_PX - HANDLE_PX) / scale}
             onPointerDown={(e) => onDown(h, e)}
             onMouseEnter={(e) => setCursor(e, CURSORS[h])}
             onMouseLeave={(e) => setCursor(e, "")}

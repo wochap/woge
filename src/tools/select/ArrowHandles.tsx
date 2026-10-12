@@ -3,7 +3,7 @@ import type Konva from "konva";
 import { Circle } from "react-konva";
 import { useEditor } from "../../store/editor";
 import { snap45, type ArrowObj } from "../../model/objects";
-import { cssVar, setCursor } from "../../canvas/useHandles";
+import { HANDLE_HIT_PX, cssVar, setCursor } from "../../canvas/useHandles";
 import { trackDrag } from "../../canvas/pointer";
 import { ANCHOR_PX } from "./SelectionTransformer";
 
@@ -71,6 +71,7 @@ export function ArrowHandles({ docScale }: { docScale: number }) {
           fill={bg}
           stroke={accent}
           strokeWidth={1.5 / (view * docScale)}
+          hitStrokeWidth={(HANDLE_HIT_PX - ANCHOR_PX) / (view * docScale)}
           onPointerDown={down(end)}
           onMouseEnter={(e) => setCursor(e, "crosshair")}
           onMouseLeave={(e) => setCursor(e, "")}

@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useEditor } from "../../store/editor";
 import type { ObjectType, StrokeWidth } from "../../model/objects";
 import type { ColorRole } from "../../model/roles";
 
 const WIDTH_TYPES: ObjectType[] = ["rect", "ellipse", "arrow", "brush", "highlight"];
-import { applyStyle, currentRole, currentValue, setColour, type StripContext } from "./apply";
+import {
+  applyStyle,
+  currentRole,
+  currentValue,
+  roleTypes,
+  setColour,
+  type StripContext,
+} from "./apply";
 import { OpacitySlider } from "./OpacitySlider";
 import { Swatches } from "./Swatches";
 import { TargetChips } from "./TargetChips";
@@ -37,8 +44,10 @@ export function TargetColorControls({
   ctx: StripContext;
   labels: [string, string];
 }) {
-  // Strip-local; `AnnotationStrip` remounts on a kind change, resetting to primary.
-  const [role, setRole] = useState<ColorRole>("primary");
+  const stored = useEditor((s) => s.colourRole);
+  const role: ColorRole =
+    stored === "secondary" && roleTypes(ctx, "secondary").length ? stored : "primary";
+  const setRole = useEditor.getState().setColourRole;
   return (
     <>
       <TargetChips
