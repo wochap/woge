@@ -20,6 +20,21 @@ With Text (`T`) active, a click SHALL create a text object at that point and ope
 - **WHEN** the user double-clicks an existing text
 - **THEN** the editor opens with the current content and caret at the end
 
+### Requirement: New text editor stays open after the creating click
+With Text active, the click that creates a text object SHALL leave the in-place editor open with keyboard focus and the caret in it. The editor SHALL close only when the user commits it (`Ctrl+Enter`, or a later blur), cancels it (`Esc`), or clicks elsewhere. The creating click itself SHALL NOT cause a blur.
+
+#### Scenario: Click keeps the editor open
+- **WHEN** Text is active and the user clicks the canvas
+- **THEN** the editor is shown and focused, and stays open until the user commits, cancels or clicks elsewhere
+
+#### Scenario: Type after the click
+- **WHEN** the user clicks the canvas with Text active and immediately types "note"
+- **THEN** "note" appears in the editor and, after `Ctrl+Enter`, a text object with that content exists
+
+#### Scenario: Click elsewhere commits
+- **WHEN** the editor is open with text typed and the user clicks on empty canvas
+- **THEN** the text is committed as one object
+
 ### Requirement: Text options
 Text objects SHALL have a colour with an opacity (0–100%), font family, size (8–200), bold, and a plate that is either none or a palette colour with a plate opacity (0–100%). The plate SHALL render as a rounded rectangle behind the text with 4px padding and unchanged radius. Its colour and opacity are independent of the theme, so canvas and export look the same in Mocha and Latte. Enabling the plate without choosing a colour (`}` while there is no plate) SHALL pick black or white, whichever contrasts more with the resolved text colour, at 70%. Setting a plate colour on text with no plate SHALL reuse the tool's last plate opacity (built-in 70%).
 
